@@ -1,0 +1,65 @@
+package com.example.warehouse.controller;
+
+import com.example.warehouse.dto.CategoryDto;
+import com.example.warehouse.service.CategoryService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/categories")
+@RequiredArgsConstructor
+public class CategoryController {
+
+    private final CategoryService categoryService;
+
+    @GetMapping
+    public ResponseEntity<List<CategoryDto>> getAllCategories() {
+        return ResponseEntity.ok(categoryService.getAllCategories());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoryDto> getCategoryById(@PathVariable Long id) {
+        return ResponseEntity.ok(categoryService.getCategoryById(id));
+    }
+
+    @GetMapping("/name/{name}")
+    public ResponseEntity<CategoryDto> getCategoryByName(@PathVariable String name) {
+        return ResponseEntity.ok(categoryService.getCategoryByName(name));
+    }
+
+    @GetMapping("/{id}/with-products")
+    public ResponseEntity<CategoryDto> getCategoryWithProducts(@PathVariable Long id) {
+        return ResponseEntity.ok(categoryService.getCategoryWithProducts(id));
+    }
+
+    @GetMapping("/with-products")
+    public ResponseEntity<List<CategoryDto>> getAllCategoriesWithProducts() {
+        return ResponseEntity.ok(categoryService.getAllCategoriesWithProducts());
+    }
+
+    @PostMapping
+    public ResponseEntity<CategoryDto> createCategory(@RequestBody CategoryDto categoryDto) {
+        return new ResponseEntity<>(categoryService.createCategory(categoryDto), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CategoryDto> updateCategory(@PathVariable Long id, @RequestBody CategoryDto categoryDto) {
+        return ResponseEntity.ok(categoryService.updateCategory(id, categoryDto));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        categoryService.deleteCategory(id);
+        return ResponseEntity.noContent().build();
+    }
+}
