@@ -1,15 +1,17 @@
 package com.example.warehouse.service;
 
 import com.example.warehouse.dto.WarehouseDto;
+import com.example.warehouse.exception.ResourceNotFoundException;
 import com.example.warehouse.mapper.WarehouseMapper;
 import com.example.warehouse.model.entity.Warehouse;
 import com.example.warehouse.repository.WarehouseRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WarehouseService {
@@ -17,21 +19,29 @@ public class WarehouseService {
     private final WarehouseRepository warehouseRepository;
     private final WarehouseMapper warehouseMapper;
 
+    private static final String NOT_FOUND_ID_MSG = "Warehouse not found with id: ";
+
     public List<WarehouseDto> getAllWarehouses() {
         return warehouseRepository.findAll().stream()
                 .map(warehouseMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public WarehouseDto getWarehouseById(Long id) {
         Warehouse warehouse = warehouseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Warehouse not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
         return warehouseMapper.toDto(warehouse);
     }
 
     public WarehouseDto getWarehouseByName(String name) {
         Warehouse warehouse = warehouseRepository.findByName(name)
-                .orElseThrow(() -> new RuntimeException("Warehouse not found with name: " + name));
+                .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found with name: " + name));
+        return warehouseMapper.toDto(warehouse);
+    }
+
+    public WarehouseDto getWarehouseWithStocks(Long id) {
+        Warehouse warehouse = warehouseRepository.findByIdWithStocks(id)
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
         return warehouseMapper.toDto(warehouse);
     }
 
@@ -45,7 +55,7 @@ public class WarehouseService {
     @Transactional
     public WarehouseDto updateWarehouse(Long id, WarehouseDto warehouseDto) {
         Warehouse warehouse = warehouseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Warehouse not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
 
         warehouse.setName(warehouseDto.getName());
         warehouse.setAddress(warehouseDto.getAddress());
@@ -58,14 +68,8 @@ public class WarehouseService {
     @Transactional
     public void deleteWarehouse(Long id) {
         if (!warehouseRepository.existsById(id)) {
-            throw new RuntimeException("Warehouse not found with id: " + id);
+            throw new ResourceNotFoundException(NOT_FOUND_ID_MSG + id);
         }
         warehouseRepository.deleteById(id);
-    }
-
-    public WarehouseDto getWarehouseWithStocks(Long id) {
-        Warehouse warehouse = warehouseRepository.findByIdWithStocks(id)
-                .orElseThrow(() -> new RuntimeException("Warehouse not found with id: " + id));
-        return warehouseMapper.toDto(warehouse);
     }
 }

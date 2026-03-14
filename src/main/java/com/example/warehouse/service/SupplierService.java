@@ -1,15 +1,17 @@
 package com.example.warehouse.service;
 
 import com.example.warehouse.dto.SupplierDto;
+import com.example.warehouse.exception.ResourceNotFoundException;
 import com.example.warehouse.mapper.SupplierMapper;
 import com.example.warehouse.model.entity.Supplier;
 import com.example.warehouse.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SupplierService {
@@ -17,28 +19,42 @@ public class SupplierService {
     private final SupplierRepository supplierRepository;
     private final SupplierMapper supplierMapper;
 
+    private static final String NOT_FOUND_ID_MSG = "Supplier not found with id: ";
+
     public List<SupplierDto> getAllSuppliers() {
         return supplierRepository.findAll().stream()
                 .map(supplierMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public SupplierDto getSupplierById(Long id) {
         Supplier supplier = supplierRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
         return supplierMapper.toDto(supplier);
     }
 
     public SupplierDto getSupplierByName(String name) {
         Supplier supplier = supplierRepository.findByName(name)
-                .orElseThrow(() -> new RuntimeException("Supplier not found with name: " + name));
+                .orElseThrow(() -> new ResourceNotFoundException("Supplier not found with name: " + name));
         return supplierMapper.toDto(supplier);
     }
 
     public SupplierDto getSupplierByEmail(String email) {
         Supplier supplier = supplierRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Supplier not found with email: " + email));
+                .orElseThrow(() -> new ResourceNotFoundException("Supplier not found with email: " + email));
         return supplierMapper.toDto(supplier);
+    }
+
+    public SupplierDto getSupplierWithProducts(Long id) {
+        Supplier supplier = supplierRepository.findByIdWithProducts(id)
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
+        return supplierMapper.toDto(supplier);
+    }
+
+    public List<SupplierDto> searchSuppliersByName(String name) {
+        return supplierRepository.findByNameContainingIgnoreCase(name).stream()
+                .map(supplierMapper::toDto)
+                .toList();
     }
 
     @Transactional
@@ -51,7 +67,7 @@ public class SupplierService {
     @Transactional
     public SupplierDto updateSupplier(Long id, SupplierDto supplierDto) {
         Supplier supplier = supplierRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
 
         supplier.setName(supplierDto.getName());
         supplier.setContactPerson(supplierDto.getContactPerson());
@@ -66,20 +82,8 @@ public class SupplierService {
     @Transactional
     public void deleteSupplier(Long id) {
         if (!supplierRepository.existsById(id)) {
-            throw new RuntimeException("Supplier not found with id: " + id);
+            throw new ResourceNotFoundException(NOT_FOUND_ID_MSG + id);
         }
         supplierRepository.deleteById(id);
-    }
-
-    public List<SupplierDto> searchSuppliersByName(String namePart) {
-        return supplierRepository.findByNameContainingIgnoreCase(namePart).stream()
-                .map(supplierMapper::toDto)
-                .collect(Collectors.toList());
-    }
-
-    public SupplierDto getSupplierWithProducts(Long id) {
-        Supplier supplier = supplierRepository.findByIdWithProducts(id)
-                .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + id));
-        return supplierMapper.toDto(supplier);
     }
 }

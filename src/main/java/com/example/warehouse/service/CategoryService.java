@@ -1,15 +1,17 @@
 package com.example.warehouse.service;
 
 import com.example.warehouse.dto.CategoryDto;
+import com.example.warehouse.exception.ResourceNotFoundException;
 import com.example.warehouse.mapper.CategoryMapper;
 import com.example.warehouse.model.entity.Category;
 import com.example.warehouse.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
@@ -17,29 +19,31 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
 
+    private static final String NOT_FOUND_ID_MSG = "Category not found with id: ";
+    private static final String NOT_FOUND_NAME_MSG = "Category not found with name: ";
+
     public List<CategoryDto> getAllCategories() {
         return categoryRepository.findAll().stream()
                 .map(categoryMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public CategoryDto getCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
         return categoryMapper.toDto(category);
     }
 
     public CategoryDto getCategoryByName(String name) {
         Category category = categoryRepository.findByName(name)
-                .orElseThrow(() -> new RuntimeException("Category not found with name: " + name));
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_NAME_MSG + name));
         return categoryMapper.toDto(category);
     }
 
     public List<CategoryDto> searchCategoriesByName(String name) {
-        List<Category> categories = categoryRepository.findByNameContainingIgnoreCase(name);
-        return categories.stream()
+        return categoryRepository.findByNameContainingIgnoreCase(name).stream()
                 .map(categoryMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional
@@ -55,7 +59,7 @@ public class CategoryService {
     @Transactional
     public CategoryDto updateCategory(Long id, CategoryDto categoryDto) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
 
         category.setName(categoryDto.getName());
         category.setDescription(categoryDto.getDescription());
@@ -67,20 +71,20 @@ public class CategoryService {
     @Transactional
     public void deleteCategory(Long id) {
         if (!categoryRepository.existsById(id)) {
-            throw new RuntimeException("Category not found with id: " + id);
+            throw new ResourceNotFoundException(NOT_FOUND_ID_MSG + id);
         }
         categoryRepository.deleteById(id);
     }
 
     public CategoryDto getCategoryWithProducts(Long id) {
         Category category = categoryRepository.findByIdWithProducts(id)
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
         return categoryMapper.toDto(category);
     }
 
     public List<CategoryDto> getAllCategoriesWithProducts() {
         return categoryRepository.findAllWithProducts().stream()
                 .map(categoryMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 }
