@@ -40,6 +40,7 @@ public class Supplier {
     private String email;
     private String address;
 
+    @Builder.Default
     @ManyToMany(mappedBy = "suppliers")
     private Set<Product> products = new HashSet<>();
 

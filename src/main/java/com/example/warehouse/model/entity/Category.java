@@ -38,6 +38,7 @@ public class Category {
 
     private String description;
 
+    @Builder.Default  // ← ДОБАВЛЕНО!
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products = new ArrayList<>();
 

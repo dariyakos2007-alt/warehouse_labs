@@ -49,6 +49,7 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    @Builder.Default  // ← ДОБАВЛЕНО!
     @ManyToMany
     @JoinTable(
             name = "product_supplier",
@@ -57,6 +58,7 @@ public class Product {
     )
     private Set<Supplier> suppliers = new HashSet<>();
 
+    @Builder.Default  // ← ДОБАВЛЕНО!
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Stock> stocks = new ArrayList<>();
 

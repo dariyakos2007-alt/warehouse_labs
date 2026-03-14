@@ -3,6 +3,7 @@ package com.example.warehouse.mapper;
 import com.example.warehouse.dto.ProductDto;
 import com.example.warehouse.model.entity.Product;
 import com.example.warehouse.model.entity.Stock;
+import com.example.warehouse.model.entity.Supplier;  // ← ДОБАВЛЕНО!
 import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,7 +28,7 @@ public class ProductMapper {
 
         if (product.getSuppliers() != null) {
             dto.setSupplierIds(product.getSuppliers().stream()
-                    .map(supplier -> supplier.getId())
+                    .map(Supplier::getId)
                     .collect(Collectors.toSet()));
         }
 
@@ -47,7 +48,7 @@ public class ProductMapper {
         }
         return products.stream()
                 .map(this::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public Product toEntity(ProductDto dto) {
