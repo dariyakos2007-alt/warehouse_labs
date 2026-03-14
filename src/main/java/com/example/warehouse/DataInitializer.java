@@ -22,7 +22,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@SuppressWarnings("NullableProblems")  // убирает предупреждение о параметре
+@SuppressWarnings("NullableProblems")
 public class DataInitializer implements CommandLineRunner {
 
     private final CategoryRepository categoryRepository;

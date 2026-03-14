@@ -19,7 +19,6 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
 
-    // Константы для сообщений об ошибках
     private static final String NOT_FOUND_ID_MSG = "Category not found with id: ";
     private static final String NOT_FOUND_NAME_MSG = "Category not found with name: ";
     private static final String EXISTS_MSG = "Category with name ";

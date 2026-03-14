@@ -39,7 +39,7 @@ public class Warehouse {
     private String address;
     private String phone;
 
-    @Builder.Default  // ← ДОБАВЛЕНО!
+    @Builder.Default
     @OneToMany(mappedBy = "warehouse", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Stock> stocks = new ArrayList<>();
 
