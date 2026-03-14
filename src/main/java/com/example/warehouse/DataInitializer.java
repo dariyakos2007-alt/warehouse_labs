@@ -2,22 +2,27 @@ package com.example.warehouse;
 
 import com.example.warehouse.model.entity.Category;
 import com.example.warehouse.model.entity.Product;
+import com.example.warehouse.model.entity.Stock;
 import com.example.warehouse.model.entity.Supplier;
 import com.example.warehouse.model.entity.Warehouse;
-import com.example.warehouse.model.entity.Stock;
 import com.example.warehouse.repository.CategoryRepository;
 import com.example.warehouse.repository.ProductRepository;
+import com.example.warehouse.repository.StockRepository;
 import com.example.warehouse.repository.SupplierRepository;
 import com.example.warehouse.repository.WarehouseRepository;
-import com.example.warehouse.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
+@SuppressWarnings("NullableProblems")  // убирает предупреждение о параметре
 public class DataInitializer implements CommandLineRunner {
 
     private final CategoryRepository categoryRepository;
@@ -28,98 +33,91 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     @Transactional
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
 
         if (categoryRepository.count() > 0) {
-            System.out.println("Данные уже есть в базе, инициализация пропущена");
+            log.info("Данные уже есть в базе, инициализация пропущена");
             return;
         }
 
-        System.out.println("Инициализация тестовых данных...");
+        log.info("Инициализация тестовых данных...");
 
-        Category tools = new Category("Инструменты", "Ручные и электроинструменты");
-        Category fasteners = new Category("Крепеж", "Гвозди, шурупы, болты");
-        Category materials = new Category("Материалы", "Расходные материалы");
-
-        tools = categoryRepository.save(tools);
-        fasteners = categoryRepository.save(fasteners);
-        materials = categoryRepository.save(materials);
-
-        Product hammer = new Product("Молоток", 35.50);
-        hammer.setCategory(tools);
-
-        Product screwdriver = new Product("Отвертка", 9.99);
-        screwdriver.setCategory(tools);
-
-        Product drill = new Product("Дрель", 24.00);
-        drill.setCategory(tools);
-
-        Product nails = new Product("Гвозди 100мм", 4.50);
-        nails.setCategory(fasteners);
-
-        Product screws = new Product("Саморезы", 6.30);
-        screws.setCategory(fasteners);
-
-        Product paint = new Product("Краска белая", 12.50);
-        paint.setCategory(materials);
-
-        Product brush = new Product("Кисть малярная", 8.90);
-        brush.setCategory(materials);
-
-        hammer = productRepository.save(hammer);
-        screwdriver = productRepository.save(screwdriver);
-        drill = productRepository.save(drill);
-        nails = productRepository.save(nails);
-        screws = productRepository.save(screws);
-        paint = productRepository.save(paint);
-        brush = productRepository.save(brush);
-
-        Supplier supplier1 = new Supplier(
-                "ООО ИнструментСервис",
-                "Иванов Иван",
-                "+375291234567",
-                "info@instrument.by",
-                "Минск, ул. Промышленная 5"
+        // ========== КАТЕГОРИИ ==========
+        Category tools = categoryRepository.save(
+                Category.builder().name("Инструменты").description("Ручные и электроинструменты").build()
+        );
+        Category fasteners = categoryRepository.save(
+                Category.builder().name("Крепеж").description("Гвозди, шурупы, болты").build()
+        );
+        Category materials = categoryRepository.save(
+                Category.builder().name("Материалы").description("Расходные материалы").build()
         );
 
-        Supplier supplier2 = new Supplier(
-                "ЧУП КрепежПро",
-                "Петров Петр",
-                "+375297654321",
-                "sales@krepezh.by",
-                "Минск, ул. Заводская 10"
+        // ========== ТОВАРЫ ==========
+        Product hammer = productRepository.save(
+                Product.builder().name("Молоток").price(35.50).category(tools).build()
+        );
+        Product screwdriver = productRepository.save(
+                Product.builder().name("Отвертка").price(9.99).category(tools).build()
+        );
+        Product drill = productRepository.save(
+                Product.builder().name("Дрель").price(24.00).category(tools).build()
+        );
+        Product nails = productRepository.save(
+                Product.builder().name("Гвозди 100мм").price(4.50).category(fasteners).build()
+        );
+        Product screws = productRepository.save(
+                Product.builder().name("Саморезы").price(6.30).category(fasteners).build()
+        );
+        Product paint = productRepository.save(
+                Product.builder().name("Краска белая").price(12.50).category(materials).build()
+        );
+        Product brush = productRepository.save(
+                Product.builder().name("Кисть малярная").price(8.90).category(materials).build()
         );
 
-        Supplier supplier3 = new Supplier(
-                "ИП Сидоров",
-                "Сидоров Сидор",
-                "+375293334455",
-                "sidorov@tut.by",
-                "Минск, ул. Строителей 15"
+        // ========== ПОСТАВЩИКИ ==========
+        Supplier supplier1 = supplierRepository.save(
+                Supplier.builder()
+                        .name("ООО ИнструментСервис")
+                        .contactPerson("Иванов Иван")
+                        .phone("+375291234567")
+                        .email("info@instrument.by")
+                        .address("Минск, ул. Промышленная 5")
+                        .build()
+        );
+        Supplier supplier2 = supplierRepository.save(
+                Supplier.builder()
+                        .name("ЧУП КрепежПро")
+                        .contactPerson("Петров Петр")
+                        .phone("+375297654321")
+                        .email("sales@krepezh.by")
+                        .address("Минск, ул. Заводская 10")
+                        .build()
+        );
+        Supplier supplier3 = supplierRepository.save(
+                Supplier.builder()
+                        .name("ИП Сидоров")
+                        .contactPerson("Сидоров Сидор")
+                        .phone("+375293334455")
+                        .email("sidorov@tut.by")
+                        .address("Минск, ул. Строителей 15")
+                        .build()
         );
 
-        supplier1 = supplierRepository.save(supplier1);
-        supplier2 = supplierRepository.save(supplier2);
-        supplier3 = supplierRepository.save(supplier3);
-
+        // ========== СВЯЗИ ТОВАРОВ С ПОСТАВЩИКАМИ ==========
         hammer.setSuppliers(new HashSet<>());
         hammer.getSuppliers().add(supplier1);
-
         screwdriver.setSuppliers(new HashSet<>());
         screwdriver.getSuppliers().add(supplier1);
-
         drill.setSuppliers(new HashSet<>());
         drill.getSuppliers().add(supplier1);
-
         nails.setSuppliers(new HashSet<>());
         nails.getSuppliers().add(supplier2);
-
         screws.setSuppliers(new HashSet<>());
         screws.getSuppliers().add(supplier2);
-
         paint.setSuppliers(new HashSet<>());
         paint.getSuppliers().add(supplier3);
-
         brush.setSuppliers(new HashSet<>());
         brush.getSuppliers().add(supplier3);
 
@@ -131,61 +129,51 @@ public class DataInitializer implements CommandLineRunner {
         productRepository.save(paint);
         productRepository.save(brush);
 
-        Warehouse mainWarehouse = new Warehouse(
-                "Главный склад",
-                "Минск, ул. Логойский тракт 15",
-                "+375172223344"
+        // ========== СКЛАДЫ ==========
+        Warehouse mainWarehouse = warehouseRepository.save(
+                Warehouse.builder()
+                        .name("Главный склад")
+                        .address("Минск, ул. Логойский тракт 15")
+                        .phone("+375172223344")
+                        .build()
+        );
+        Warehouse secondWarehouse = warehouseRepository.save(
+                Warehouse.builder()
+                        .name("Дополнительный склад")
+                        .address("Минск, ул. Тимирязева 70")
+                        .phone("+375172233445")
+                        .build()
+        );
+        Warehouse regionalWarehouse = warehouseRepository.save(
+                Warehouse.builder()
+                        .name("Региональный склад")
+                        .address("Гродно, ул. Советская 10")
+                        .phone("+375152445566")
+                        .build()
         );
 
-        Warehouse secondWarehouse = new Warehouse(
-                "Дополнительный склад",
-                "Минск, ул. Тимирязева 70",
-                "+375172233445"
+        // ========== ОСТАТКИ НА СКЛАДАХ (ИСПРАВЛЕНО) ==========
+        List<Stock> stocks = Arrays.asList(
+                new Stock(hammer, mainWarehouse, 50, 10, 200),
+                new Stock(screwdriver, mainWarehouse, 120, 20, 300),
+                new Stock(drill, mainWarehouse, 30, 5, 100),
+                new Stock(nails, mainWarehouse, 200, 50, 500),
+                new Stock(screws, mainWarehouse, 150, 30, 400),
+                new Stock(hammer, secondWarehouse, 25, 5, 100),
+                new Stock(screwdriver, secondWarehouse, 60, 10, 150),
+                new Stock(paint, secondWarehouse, 80, 20, 200),
+                new Stock(brush, secondWarehouse, 45, 10, 100),
+                new Stock(paint, regionalWarehouse, 30, 10, 100),
+                new Stock(brush, regionalWarehouse, 20, 5, 50),
+                new Stock(nails, regionalWarehouse, 100, 20, 300)
         );
+        stockRepository.saveAll(stocks);
 
-        Warehouse regionalWarehouse = new Warehouse(
-                "Региональный склад",
-                "Гродно, ул. Советская 10",
-                "+375152445566"
-        );
-
-        mainWarehouse = warehouseRepository.save(mainWarehouse);
-        secondWarehouse = warehouseRepository.save(secondWarehouse);
-        regionalWarehouse = warehouseRepository.save(regionalWarehouse);
-
-        Stock stock1 = new Stock(hammer, mainWarehouse, 50, 10, 200);
-        Stock stock2 = new Stock(screwdriver, mainWarehouse, 120, 20, 300);
-        Stock stock3 = new Stock(drill, mainWarehouse, 30, 5, 100);
-        Stock stock4 = new Stock(nails, mainWarehouse, 200, 50, 500);
-        Stock stock5 = new Stock(screws, mainWarehouse, 150, 30, 400);
-
-        Stock stock6 = new Stock(hammer, secondWarehouse, 25, 5, 100);
-        Stock stock7 = new Stock(screwdriver, secondWarehouse, 60, 10, 150);
-        Stock stock8 = new Stock(paint, secondWarehouse, 80, 20, 200);
-        Stock stock9 = new Stock(brush, secondWarehouse, 45, 10, 100);
-
-        Stock stock10 = new Stock(paint, regionalWarehouse, 30, 10, 100);
-        Stock stock11 = new Stock(brush, regionalWarehouse, 20, 5, 50);
-        Stock stock12 = new Stock(nails, regionalWarehouse, 100, 20, 300);
-
-        stockRepository.save(stock1);
-        stockRepository.save(stock2);
-        stockRepository.save(stock3);
-        stockRepository.save(stock4);
-        stockRepository.save(stock5);
-        stockRepository.save(stock6);
-        stockRepository.save(stock7);
-        stockRepository.save(stock8);
-        stockRepository.save(stock9);
-        stockRepository.save(stock10);
-        stockRepository.save(stock11);
-        stockRepository.save(stock12);
-
-        System.out.println(" Тестовые данные успешно загружены!");
-        System.out.println(" Категорий: " + categoryRepository.count());
-        System.out.println(" Товаров: " + productRepository.count());
-        System.out.println(" Поставщиков: " + supplierRepository.count());
-        System.out.println(" Складов: " + warehouseRepository.count());
-        System.out.println(" Остатков: " + stockRepository.count());
+        log.info("✅ Тестовые данные успешно загружены!");
+        log.info("📊 Категорий: {}", categoryRepository.count());
+        log.info("📦 Товаров: {}", productRepository.count());
+        log.info("🏭 Поставщиков: {}", supplierRepository.count());
+        log.info("🏢 Складов: {}", warehouseRepository.count());
+        log.info("📋 Остатков: {}", stockRepository.count());
     }
 }
