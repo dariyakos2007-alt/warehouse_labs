@@ -19,8 +19,10 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
 
+    // Константы для сообщений об ошибках
     private static final String NOT_FOUND_ID_MSG = "Category not found with id: ";
     private static final String NOT_FOUND_NAME_MSG = "Category not found with name: ";
+    private static final String EXISTS_MSG = "Category with name ";
 
     public List<CategoryDto> getAllCategories() {
         return categoryRepository.findAll().stream()
@@ -49,7 +51,7 @@ public class CategoryService {
     @Transactional
     public CategoryDto createCategory(CategoryDto categoryDto) {
         if (categoryRepository.existsByName(categoryDto.getName())) {
-            throw new RuntimeException("Category with name " + categoryDto.getName() + " already exists");
+            throw new RuntimeException(EXISTS_MSG + categoryDto.getName() + " already exists");
         }
         Category category = categoryMapper.toEntity(categoryDto);
         Category savedCategory = categoryRepository.save(category);
