@@ -28,7 +28,4 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 
     @Query("SELECT DISTINCT s FROM Stock s JOIN FETCH s.product JOIN FETCH s.warehouse")
     List<Stock> findAllWithDetails();
-
-    @Query("SELECT SUM(s.quantity) FROM Stock s WHERE s.product.id = :productId")
-    Integer getTotalQuantityForProduct(@Param("productId") Long productId);
 }

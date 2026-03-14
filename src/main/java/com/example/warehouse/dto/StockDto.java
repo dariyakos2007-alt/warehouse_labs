@@ -21,6 +21,6 @@ public class StockDto {
     private String productName;
     private Long warehouseId;
     private String warehouseName;
-    private boolean lowStock;
-    private boolean overStock;
+    private Boolean lowStock;
+    private Boolean overStock;
 }

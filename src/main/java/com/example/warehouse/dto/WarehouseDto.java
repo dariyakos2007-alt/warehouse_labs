@@ -15,5 +15,5 @@ public class WarehouseDto {
     private String name;
     private String address;
     private String phone;
-    private int totalProducts;
+    private Integer totalProducts;
 }

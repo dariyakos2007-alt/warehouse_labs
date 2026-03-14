@@ -15,10 +15,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByCategoryId(Long categoryId);
 
-    List<Product> findByPriceLessThan(double price);
-
-    List<Product> findByPriceGreaterThan(double price);
-
     @Query("SELECT p FROM Product p LEFT JOIN FETCH p.category WHERE p.id = :id")
     Optional<Product> findByIdWithCategory(@Param("id") Long id);
 
@@ -29,6 +25,4 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.stocks")
     List<Product> findAllWithStocks();
-
-    boolean existsByCategoryId(Long categoryId);
 }

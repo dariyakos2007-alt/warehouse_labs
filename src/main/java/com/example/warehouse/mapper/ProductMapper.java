@@ -58,7 +58,6 @@ public class ProductMapper {
         product.setId(dto.getId());
         product.setName(dto.getName());
         product.setPrice(dto.getPrice());
-
         return product;
     }
 }

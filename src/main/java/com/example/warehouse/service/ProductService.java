@@ -4,12 +4,16 @@ import com.example.warehouse.dto.ProductDto;
 import com.example.warehouse.mapper.ProductMapper;
 import com.example.warehouse.model.entity.Category;
 import com.example.warehouse.model.entity.Product;
+import com.example.warehouse.model.entity.Supplier;
 import com.example.warehouse.repository.CategoryRepository;
 import com.example.warehouse.repository.ProductRepository;
+import com.example.warehouse.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -18,10 +22,31 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final SupplierRepository supplierRepository;
     private final ProductMapper productMapper;
 
+    private void setCategoryIfPresent(Product product, Long categoryId) {
+        if (categoryId != null) {
+            Category category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
+            product.setCategory(category);
+        }
+    }
+
+    private void setSuppliersIfPresent(Product product, Set<Long> supplierIds) {
+        if (supplierIds != null && !supplierIds.isEmpty()) {
+            Set<Supplier> suppliers = new HashSet<>();
+            for (Long supplierId : supplierIds) {
+                Supplier supplier = supplierRepository.findById(supplierId)
+                        .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + supplierId));
+                suppliers.add(supplier);
+            }
+            product.setSuppliers(suppliers);
+        }
+    }
+
     public List<ProductDto> getAllProducts() {
-        return productRepository.findAllWithStocks().stream()       // стало
+        return productRepository.findAllWithStocks().stream()
                 .map(productMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -47,12 +72,8 @@ public class ProductService {
     @Transactional
     public ProductDto createProduct(ProductDto productDto) {
         Product product = productMapper.toEntity(productDto);
-
-        if (productDto.getCategoryId() != null) {
-            Category category = categoryRepository.findById(productDto.getCategoryId())
-                    .orElseThrow(() -> new RuntimeException("Category not found with id: " + productDto.getCategoryId()));
-            product.setCategory(category);
-        }
+        setCategoryIfPresent(product, productDto.getCategoryId());
+        setSuppliersIfPresent(product, productDto.getSupplierIds());
 
         Product savedProduct = productRepository.save(product);
         return productMapper.toDto(savedProduct);
@@ -65,12 +86,8 @@ public class ProductService {
 
         product.setName(productDto.getName());
         product.setPrice(productDto.getPrice());
-
-        if (productDto.getCategoryId() != null) {
-            Category category = categoryRepository.findById(productDto.getCategoryId())
-                    .orElseThrow(() -> new RuntimeException("Category not found with id: " + productDto.getCategoryId()));
-            product.setCategory(category);
-        }
+        setCategoryIfPresent(product, productDto.getCategoryId());
+        setSuppliersIfPresent(product, productDto.getSupplierIds());
 
         Product updatedProduct = productRepository.save(product);
         return productMapper.toDto(updatedProduct);

@@ -5,14 +5,7 @@ import com.example.warehouse.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
@@ -35,6 +28,11 @@ public class CategoryController {
     @GetMapping("/name/{name}")
     public ResponseEntity<CategoryDto> getCategoryByName(@PathVariable String name) {
         return ResponseEntity.ok(categoryService.getCategoryByName(name));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<CategoryDto>> searchCategories(@RequestParam String name) {
+        return ResponseEntity.ok(categoryService.searchCategoriesByName(name));
     }
 
     @GetMapping("/{id}/with-products")

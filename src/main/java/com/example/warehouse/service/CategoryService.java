@@ -35,13 +35,18 @@ public class CategoryService {
         return categoryMapper.toDto(category);
     }
 
+    public List<CategoryDto> searchCategoriesByName(String name) {
+        List<Category> categories = categoryRepository.findByNameContainingIgnoreCase(name);
+        return categories.stream()
+                .map(categoryMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public CategoryDto createCategory(CategoryDto categoryDto) {
-
         if (categoryRepository.existsByName(categoryDto.getName())) {
             throw new RuntimeException("Category with name " + categoryDto.getName() + " already exists");
         }
-
         Category category = categoryMapper.toEntity(categoryDto);
         Category savedCategory = categoryRepository.save(category);
         return categoryMapper.toDto(savedCategory);
