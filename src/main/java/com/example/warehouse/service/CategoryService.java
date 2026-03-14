@@ -51,7 +51,7 @@ public class CategoryService {
     @Transactional
     public CategoryDto createCategory(CategoryDto categoryDto) {
         if (categoryRepository.existsByName(categoryDto.getName())) {
-            throw new RuntimeException(EXISTS_MSG + categoryDto.getName() + " already exists");
+            throw new IllegalArgumentException(EXISTS_MSG + categoryDto.getName() + " already exists");
         }
         Category category = categoryMapper.toEntity(categoryDto);
         Category savedCategory = categoryRepository.save(category);
