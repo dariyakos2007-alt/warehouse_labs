@@ -42,7 +42,6 @@ public class DataInitializer implements CommandLineRunner {
 
         log.info("Инициализация тестовых данных...");
 
-        // ========== КАТЕГОРИИ ==========
         Category tools = categoryRepository.save(
                 Category.builder().name("Инструменты").description("Ручные и электроинструменты").build()
         );
@@ -53,7 +52,6 @@ public class DataInitializer implements CommandLineRunner {
                 Category.builder().name("Материалы").description("Расходные материалы").build()
         );
 
-        // ========== ТОВАРЫ ==========
         Product hammer = productRepository.save(
                 Product.builder().name("Молоток").price(35.50).category(tools).build()
         );
@@ -76,7 +74,6 @@ public class DataInitializer implements CommandLineRunner {
                 Product.builder().name("Кисть малярная").price(8.90).category(materials).build()
         );
 
-        // ========== ПОСТАВЩИКИ ==========
         Supplier supplier1 = supplierRepository.save(
                 Supplier.builder()
                         .name("ООО ИнструментСервис")
@@ -105,7 +102,6 @@ public class DataInitializer implements CommandLineRunner {
                         .build()
         );
 
-        // ========== СВЯЗИ ТОВАРОВ С ПОСТАВЩИКАМИ ==========
         hammer.setSuppliers(new HashSet<>());
         hammer.getSuppliers().add(supplier1);
         screwdriver.setSuppliers(new HashSet<>());
@@ -129,7 +125,6 @@ public class DataInitializer implements CommandLineRunner {
         productRepository.save(paint);
         productRepository.save(brush);
 
-        // ========== СКЛАДЫ ==========
         Warehouse mainWarehouse = warehouseRepository.save(
                 Warehouse.builder()
                         .name("Главный склад")
@@ -152,7 +147,6 @@ public class DataInitializer implements CommandLineRunner {
                         .build()
         );
 
-        // ========== ОСТАТКИ НА СКЛАДАХ (ИСПРАВЛЕНО) ==========
         List<Stock> stocks = Arrays.asList(
                 new Stock(hammer, mainWarehouse, 50, 10, 200),
                 new Stock(screwdriver, mainWarehouse, 120, 20, 300),
@@ -169,11 +163,11 @@ public class DataInitializer implements CommandLineRunner {
         );
         stockRepository.saveAll(stocks);
 
-        log.info("✅ Тестовые данные успешно загружены!");
-        log.info("📊 Категорий: {}", categoryRepository.count());
-        log.info("📦 Товаров: {}", productRepository.count());
-        log.info("🏭 Поставщиков: {}", supplierRepository.count());
-        log.info("🏢 Складов: {}", warehouseRepository.count());
-        log.info("📋 Остатков: {}", stockRepository.count());
+        log.info(" Тестовые данные успешно загружены!");
+        log.info(" Категорий: {}", categoryRepository.count());
+        log.info(" Товаров: {}", productRepository.count());
+        log.info(" Поставщиков: {}", supplierRepository.count());
+        log.info(" Складов: {}", warehouseRepository.count());
+        log.info(" Остатков: {}", stockRepository.count());
     }
 }
