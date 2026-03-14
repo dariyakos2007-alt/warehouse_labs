@@ -38,12 +38,8 @@ public class Category {
 
     private String description;
 
-    @Builder.Default  // ← ДОБАВЛЕНО!
+    @Builder.Default
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products = new ArrayList<>();
 
-    public Category(String name, String description) {
-        this.name = name;
-        this.description = description;
-    }
 }

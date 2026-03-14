@@ -44,11 +44,4 @@ public class Supplier {
     @ManyToMany(mappedBy = "suppliers")
     private Set<Product> products = new HashSet<>();
 
-    public Supplier(String name, String contactPerson, String phone, String email, String address) {
-        this.name = name;
-        this.contactPerson = contactPerson;
-        this.phone = phone;
-        this.email = email;
-        this.address = address;
-    }
 }
