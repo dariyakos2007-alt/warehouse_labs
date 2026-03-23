@@ -29,18 +29,6 @@ public class StockService {
     private static final String PRODUCT_NOT_FOUND_MSG = "Product not found with id: ";
     private static final String WAREHOUSE_NOT_FOUND_MSG = "Warehouse not found with id: ";
 
-    public List<StockDto> getAllStocksWithProblem() {
-        return stockRepository.findAll().stream()
-                .map(stockMapper::toDto)
-                .toList();
-    }
-
-    public List<StockDto> getAllStocksWithJoinFetch() {
-        return stockRepository.findAllWithWarehouseAndProduct().stream()
-                .map(stockMapper::toDto)
-                .toList();
-    }
-
     public List<StockDto> getAllStocks() {
         return stockRepository.findAll().stream()
                 .map(stockMapper::toDto)
@@ -167,5 +155,19 @@ public class StockService {
 
         stockRepository.save(fromStock);
         stockRepository.save(toStock);
+    }
+
+    public List<StockDto> getAllStocksWithProblem() {
+        log.info("=== ДЕМОНСТРАЦИЯ ПРОБЛЕМЫ N+1 ===");
+        return stockRepository.findAll().stream()
+                .map(stockMapper::toDto)
+                .toList();
+    }
+
+    public List<StockDto> getAllStocksWithJoinFetch() {
+        log.info("=== РЕШЕНИЕ N+1: JOIN FETCH ===");
+        return stockRepository.findAllWithWarehouseAndProduct().stream()
+                .map(stockMapper::toDto)
+                .toList();
     }
 }
