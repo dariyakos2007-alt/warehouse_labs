@@ -10,12 +10,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.PatchMapping;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/stocks")
@@ -61,11 +62,6 @@ public class StockController {
         return ResponseEntity.ok(stockService.getStockByProductAndWarehouse(productId, warehouseId));
     }
 
-    @GetMapping("/low-stock")
-    public ResponseEntity<List<StockDto>> getLowStock() {
-        return ResponseEntity.ok(stockService.getLowStock());
-    }
-
     @GetMapping("/over-stock")
     public ResponseEntity<List<StockDto>> getOverStock() {
         return ResponseEntity.ok(stockService.getOverStock());
@@ -105,5 +101,37 @@ public class StockController {
             @RequestParam int amount) {
         stockService.transferStock(productId, fromWarehouseId, toWarehouseId, amount);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/demo/no-tx")
+    public ResponseEntity<?> demoNoTx() {
+        try {
+            stockService.demoWithoutTx();
+            return ResponseEntity.ok("ok");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", e.getMessage()
+            ));
+        }
+    }
+
+    @PostMapping("/demo/with-tx")
+    public ResponseEntity<?> demoWithTx() {
+        stockService.demoWithTx();
+        return ResponseEntity.ok(Map.of(
+                "status", "success"
+        ));
+    }
+
+    @PostMapping("/demo/with-tx-error")
+    public ResponseEntity<?> demoWithTxAndError() {
+        try {
+            stockService.demoWithTxAndError();
+            return ResponseEntity.ok("ok");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", e.getMessage()
+            ));
+        }
     }
 }

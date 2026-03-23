@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -53,6 +54,21 @@ public class SupplierController {
         return ResponseEntity.ok(supplierService.searchSuppliersByName(name));
     }
 
+
+    @PostMapping("/NotT")
+    public ResponseEntity<SupplierDto> createSupplierNotTransactional(@RequestBody SupplierDto supplierDto) {
+        SupplierDto result = supplierService.createSupplierNotTransactional(supplierDto);
+        return new ResponseEntity<>(result, HttpStatus.CREATED);
+    }
+
+
+    @PostMapping("/T")
+    public ResponseEntity<SupplierDto> createSupplierT(@RequestBody SupplierDto supplierDto) {
+        SupplierDto result = supplierService.createSupplierTransactional(supplierDto);
+        return new ResponseEntity<>(result, HttpStatus.CREATED);
+    }
+
+
     @PostMapping
     public ResponseEntity<SupplierDto> createSupplier(@RequestBody SupplierDto supplierDto) {
         return new ResponseEntity<>(supplierService.createSupplier(supplierDto), HttpStatus.CREATED);
@@ -61,6 +77,12 @@ public class SupplierController {
     @PutMapping("/{id}")
     public ResponseEntity<SupplierDto> updateSupplier(@PathVariable Long id, @RequestBody SupplierDto supplierDto) {
         return ResponseEntity.ok(supplierService.updateSupplier(id, supplierDto));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<SupplierDto> patchSupplier(@PathVariable Long id, @RequestBody SupplierDto supplierDto) {
+        SupplierDto updated = supplierService.updateSupplier(id, supplierDto);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")

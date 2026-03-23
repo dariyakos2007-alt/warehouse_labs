@@ -13,14 +13,18 @@ import java.time.LocalDateTime;
 public class StockDto {
 
     private Long id;
-    private int quantity;
-    private Integer minQuantity;
+    private Integer quantity;
     private Integer maxQuantity;
     private LocalDateTime lastUpdated;
+
     private Long productId;
     private String productName;
     private Long warehouseId;
     private String warehouseName;
-    private Boolean lowStock;
+
     private Boolean overStock;
+
+    public boolean isOverStock() {
+        return maxQuantity != null && quantity > maxQuantity;
+    }
 }

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -61,6 +62,12 @@ public class CategoryController {
     @PutMapping("/{id}")
     public ResponseEntity<CategoryDto> updateCategory(@PathVariable Long id, @RequestBody CategoryDto categoryDto) {
         return ResponseEntity.ok(categoryService.updateCategory(id, categoryDto));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<CategoryDto> patchCategory(@PathVariable Long id, @RequestBody CategoryDto categoryDto) {
+        CategoryDto updated = categoryService.updateCategory(id, categoryDto);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")

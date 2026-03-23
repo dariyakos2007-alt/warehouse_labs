@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,6 +51,12 @@ public class WarehouseController {
     @PutMapping("/{id}")
     public ResponseEntity<WarehouseDto> updateWarehouse(@PathVariable Long id, @RequestBody WarehouseDto warehouseDto) {
         return ResponseEntity.ok(warehouseService.updateWarehouse(id, warehouseDto));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<WarehouseDto> patchWarehouse(@PathVariable Long id, @RequestBody WarehouseDto warehouseDto) {
+        WarehouseDto updated = warehouseService.updateWarehouse(id, warehouseDto);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")

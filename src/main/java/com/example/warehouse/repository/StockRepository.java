@@ -17,9 +17,6 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 
     List<Stock> findByWarehouseId(Long warehouseId);
 
-    @Query("SELECT s FROM Stock s WHERE s.minQuantity IS NOT NULL AND s.quantity < s.minQuantity")
-    List<Stock> findLowStock();
-
     @Query("SELECT s FROM Stock s WHERE s.maxQuantity IS NOT NULL AND s.quantity > s.maxQuantity")
     List<Stock> findOverStock();
 

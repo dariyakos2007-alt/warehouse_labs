@@ -15,14 +15,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@SuppressWarnings("NullableProblems")
 public class DataInitializer implements CommandLineRunner {
 
     private final CategoryRepository categoryRepository;
@@ -147,27 +145,27 @@ public class DataInitializer implements CommandLineRunner {
                         .build()
         );
 
-        List<Stock> stocks = Arrays.asList(
-                new Stock(hammer, mainWarehouse, 50, 10, 200),
-                new Stock(screwdriver, mainWarehouse, 120, 20, 300),
-                new Stock(drill, mainWarehouse, 30, 5, 100),
-                new Stock(nails, mainWarehouse, 200, 50, 500),
-                new Stock(screws, mainWarehouse, 150, 30, 400),
-                new Stock(hammer, secondWarehouse, 25, 5, 100),
-                new Stock(screwdriver, secondWarehouse, 60, 10, 150),
-                new Stock(paint, secondWarehouse, 80, 20, 200),
-                new Stock(brush, secondWarehouse, 45, 10, 100),
-                new Stock(paint, regionalWarehouse, 30, 10, 100),
-                new Stock(brush, regionalWarehouse, 20, 5, 50),
-                new Stock(nails, regionalWarehouse, 100, 20, 300)
+        List<Stock> stocks = List.of(
+                new Stock(hammer, mainWarehouse, 50, 200),
+                new Stock(screwdriver, mainWarehouse, 120, 300),
+                new Stock(drill, mainWarehouse, 30, 100),
+                new Stock(nails, mainWarehouse, 200, 500),
+                new Stock(screws, mainWarehouse, 150, 400),
+                new Stock(hammer, secondWarehouse, 25, 100),
+                new Stock(screwdriver, secondWarehouse, 60, 150),
+                new Stock(paint, secondWarehouse, 80, 200),
+                new Stock(brush, secondWarehouse, 45, 100),
+                new Stock(paint, regionalWarehouse, 30, 100),
+                new Stock(brush, regionalWarehouse, 20, 50),
+                new Stock(nails, regionalWarehouse, 100, 300)
         );
         stockRepository.saveAll(stocks);
 
-        log.info(" Тестовые данные успешно загружены!");
-        log.info(" Категорий: {}", categoryRepository.count());
-        log.info(" Товаров: {}", productRepository.count());
-        log.info(" Поставщиков: {}", supplierRepository.count());
-        log.info(" Складов: {}", warehouseRepository.count());
-        log.info(" Остатков: {}", stockRepository.count());
+        log.info("✅ Тестовые данные успешно загружены!");
+        log.info("📊 Категорий: {}", categoryRepository.count());
+        log.info("📦 Товаров: {}", productRepository.count());
+        log.info("🏭 Поставщиков: {}", supplierRepository.count());
+        log.info("🏢 Складов: {}", warehouseRepository.count());
+        log.info("📋 Остатков: {}", stockRepository.count());
     }
 }

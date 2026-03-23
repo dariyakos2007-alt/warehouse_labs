@@ -72,12 +72,6 @@ public class StockService {
         return stockMapper.toDto(stock);
     }
 
-    public List<StockDto> getLowStock() {
-        return stockRepository.findLowStock().stream()
-                .map(stockMapper::toDto)
-                .toList();
-    }
-
     public List<StockDto> getOverStock() {
         return stockRepository.findOverStock().stream()
                 .map(stockMapper::toDto)
@@ -110,7 +104,6 @@ public class StockService {
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
 
         stock.setQuantity(stockDto.getQuantity());
-        stock.setMinQuantity(stockDto.getMinQuantity());
         stock.setMaxQuantity(stockDto.getMaxQuantity());
 
         Stock updatedStock = stockRepository.save(stock);
@@ -162,5 +155,51 @@ public class StockService {
 
         stockRepository.save(fromStock);
         stockRepository.save(toStock);
+    }
+
+    public void demoWithoutTx() {
+        Stock fromStock = stockRepository.findByProductIdAndWarehouseId(1L, 1L)
+                .orElseThrow(() -> new RuntimeException("Stock not found"));
+        Stock toStock = stockRepository.findByProductIdAndWarehouseId(1L, 2L)
+                .orElseThrow(() -> new RuntimeException("Stock not found"));
+
+        fromStock.removeQuantity(10);
+        toStock.addQuantity(10);
+
+        stockRepository.save(fromStock);
+        System.out.println(" Первый склад обновлен");
+
+        throw new RuntimeException("Ошибка!");
+    }
+
+    @Transactional
+    public void demoWithTx() {
+        Stock fromStock = stockRepository.findByProductIdAndWarehouseId(1L, 1L)
+                .orElseThrow(() -> new RuntimeException("Stock not found"));
+        Stock toStock = stockRepository.findByProductIdAndWarehouseId(1L, 2L)
+                .orElseThrow(() -> new RuntimeException("Stock not found"));
+
+        fromStock.removeQuantity(10);
+        toStock.addQuantity(10);
+
+        stockRepository.save(fromStock);
+        stockRepository.save(toStock);
+
+        System.out.println("Оба склада обновлены");
+    }
+
+    @Transactional
+    public void demoWithTxAndError() {
+        Stock fromStock = stockRepository.findByProductIdAndWarehouseId(1L, 1L)
+                .orElseThrow(() -> new RuntimeException("Stock not found"));
+        Stock toStock = stockRepository.findByProductIdAndWarehouseId(1L, 2L)
+                .orElseThrow(() -> new RuntimeException("Stock not found"));
+
+        fromStock.removeQuantity(10);
+        toStock.addQuantity(10);
+
+        stockRepository.save(fromStock);
+
+        throw new RuntimeException("Ошибка в транзакции! Данные откатятся.");
     }
 }

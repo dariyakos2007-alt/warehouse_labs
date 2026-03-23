@@ -33,7 +33,6 @@ public class Stock {
     private Long id;
 
     private Integer quantity;
-    private Integer minQuantity;
     private Integer maxQuantity;
     private LocalDateTime lastUpdated;
 
@@ -52,18 +51,12 @@ public class Stock {
         this.lastUpdated = LocalDateTime.now();
     }
 
-    public Stock(Product product, Warehouse warehouse, Integer quantity,
-                 Integer minQuantity, Integer maxQuantity) {
+    public Stock(Product product, Warehouse warehouse, Integer quantity, Integer maxQuantity) {
         this.product = product;
         this.warehouse = warehouse;
         this.quantity = quantity;
-        this.minQuantity = minQuantity;
         this.maxQuantity = maxQuantity;
         this.lastUpdated = LocalDateTime.now();
-    }
-
-    public boolean isLowStock() {
-        return minQuantity != null && quantity < minQuantity;
     }
 
     public boolean isOverStock() {
