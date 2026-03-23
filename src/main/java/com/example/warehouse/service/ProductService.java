@@ -52,7 +52,7 @@ public class ProductService {
     }
 
     public List<ProductDto> getAllProducts() {
-        return productRepository.findAllWithStocks().stream()
+        return productRepository.findAllWithStocksAndCategory().stream()
                 .map(productMapper::toDto)
                 .toList();
     }

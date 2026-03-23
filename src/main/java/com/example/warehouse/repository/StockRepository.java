@@ -25,4 +25,9 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 
     @Query("SELECT DISTINCT s FROM Stock s JOIN FETCH s.product JOIN FETCH s.warehouse")
     List<Stock> findAllWithDetails();
+
+    @Query("SELECT s FROM Stock s " +
+            "LEFT JOIN FETCH s.warehouse " +
+            "LEFT JOIN FETCH s.product")
+    List<Stock> findAllWithWarehouseAndProduct();
 }

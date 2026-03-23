@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/stocks")
@@ -24,6 +23,16 @@ import java.util.Map;
 public class StockController {
 
     private final StockService stockService;
+
+    @GetMapping("/demo/problem")
+    public ResponseEntity<List<StockDto>> demoProblem() {
+        return ResponseEntity.ok(stockService.getAllStocksWithProblem());
+    }
+
+    @GetMapping("/demo/join-fetch")
+    public ResponseEntity<List<StockDto>> demoJoinFetch() {
+        return ResponseEntity.ok(stockService.getAllStocksWithJoinFetch());
+    }
 
     @GetMapping
     public ResponseEntity<List<StockDto>> getAllStocks() {
@@ -101,37 +110,5 @@ public class StockController {
             @RequestParam int amount) {
         stockService.transferStock(productId, fromWarehouseId, toWarehouseId, amount);
         return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/demo/no-tx")
-    public ResponseEntity<?> demoNoTx() {
-        try {
-            stockService.demoWithoutTx();
-            return ResponseEntity.ok("ok");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                    "error", e.getMessage()
-            ));
-        }
-    }
-
-    @PostMapping("/demo/with-tx")
-    public ResponseEntity<?> demoWithTx() {
-        stockService.demoWithTx();
-        return ResponseEntity.ok(Map.of(
-                "status", "success"
-        ));
-    }
-
-    @PostMapping("/demo/with-tx-error")
-    public ResponseEntity<?> demoWithTxAndError() {
-        try {
-            stockService.demoWithTxAndError();
-            return ResponseEntity.ok("ok");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                    "error", e.getMessage()
-            ));
-        }
     }
 }

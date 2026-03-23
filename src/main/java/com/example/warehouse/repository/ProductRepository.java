@@ -24,6 +24,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "LEFT JOIN FETCH p.suppliers")
     List<Product> findAllWithDetails();
 
-    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.stocks")
-    List<Product> findAllWithStocks();
+    @Query("SELECT DISTINCT p FROM Product p " +
+            "LEFT JOIN FETCH p.suppliers " +
+            "LEFT JOIN FETCH p.stocks " +
+            "LEFT JOIN FETCH p.category")
+    List<Product> findAllWithStocksAndCategory();
 }
