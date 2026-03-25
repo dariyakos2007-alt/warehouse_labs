@@ -2,6 +2,7 @@ package com.example.warehouse.controller;
 
 import com.example.warehouse.dto.ProductDto;
 import com.example.warehouse.service.ProductService;
+import com.example.warehouse.dto.ProductHistoryDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -76,4 +77,32 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/{id}/history")
+    public ResponseEntity<ProductHistoryDto> getProductHistory(@PathVariable Long id) {
+        ProductHistoryDto history = productService.getProductHistory(id);
+        if (history == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(history);
+    }
+
+    @PostMapping("/demo/no-tx")
+    public ResponseEntity<String> createNoTx(@RequestBody ProductDto productDto) {
+        try {
+            productService.createProductWithHistoryNoTx(productDto);
+            return ResponseEntity.ok("ok");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/demo/tx")
+    public ResponseEntity<String> createTx(@RequestBody ProductDto productDto) {
+        try {
+            productService.createProductWithHistoryTx(productDto);
+            return ResponseEntity.ok("ok");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(e.getMessage());
+        }
+    }
 }

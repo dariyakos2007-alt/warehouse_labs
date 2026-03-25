@@ -1,15 +1,7 @@
 package com.example.warehouse;
 
-import com.example.warehouse.model.entity.Category;
-import com.example.warehouse.model.entity.Product;
-import com.example.warehouse.model.entity.Stock;
-import com.example.warehouse.model.entity.Supplier;
-import com.example.warehouse.model.entity.Warehouse;
-import com.example.warehouse.repository.CategoryRepository;
-import com.example.warehouse.repository.ProductRepository;
-import com.example.warehouse.repository.StockRepository;
-import com.example.warehouse.repository.SupplierRepository;
-import com.example.warehouse.repository.WarehouseRepository;
+import com.example.warehouse.model.entity.*;
+import com.example.warehouse.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -28,6 +20,7 @@ public class DataInitializer implements CommandLineRunner {
     private final SupplierRepository supplierRepository;
     private final WarehouseRepository warehouseRepository;
     private final StockRepository stockRepository;
+    private final ProductHistoryRepository productHistoryRepository;
 
     @Override
     @Transactional
@@ -50,27 +43,29 @@ public class DataInitializer implements CommandLineRunner {
                 Category.builder().name("Материалы").description("Расходные материалы").build()
         );
 
-        Product hammer = productRepository.save(
-                Product.builder().name("Молоток").price(35.50).category(tools).build()
-        );
-        Product screwdriver = productRepository.save(
-                Product.builder().name("Отвертка").price(9.99).category(tools).build()
-        );
-        Product drill = productRepository.save(
-                Product.builder().name("Дрель").price(24.00).category(tools).build()
-        );
-        Product nails = productRepository.save(
-                Product.builder().name("Гвозди 100мм").price(4.50).category(fasteners).build()
-        );
-        Product screws = productRepository.save(
-                Product.builder().name("Саморезы").price(6.30).category(fasteners).build()
-        );
-        Product paint = productRepository.save(
-                Product.builder().name("Краска белая").price(12.50).category(materials).build()
-        );
-        Product brush = productRepository.save(
-                Product.builder().name("Кисть малярная").price(8.90).category(materials).build()
-        );
+        Product hammer = Product.builder().name("Молоток").price(35.50).category(tools).build();
+        Product screwdriver = Product.builder().name("Отвертка").price(9.99).category(tools).build();
+        Product drill = Product.builder().name("Дрель").price(24.00).category(tools).build();
+        Product nails = Product.builder().name("Гвозди 100мм").price(4.50).category(fasteners).build();
+        Product screws = Product.builder().name("Саморезы").price(6.30).category(fasteners).build();
+        Product paint = Product.builder().name("Краска белая").price(12.50).category(materials).build();
+        Product brush = Product.builder().name("Кисть малярная").price(8.90).category(materials).build();
+
+        hammer = productRepository.save(hammer);
+        screwdriver = productRepository.save(screwdriver);
+        drill = productRepository.save(drill);
+        nails = productRepository.save(nails);
+        screws = productRepository.save(screws);
+        paint = productRepository.save(paint);
+        brush = productRepository.save(brush);
+
+        productHistoryRepository.save(new ProductHistory(hammer, "admin", "Молоток поступил на склад."));
+        productHistoryRepository.save(new ProductHistory(screwdriver, "admin", " Отвертка добавлена в ассортимент. "));
+        productHistoryRepository.save(new ProductHistory(drill, "admin", "Дрель прибыла на склад."));
+        productHistoryRepository.save(new ProductHistory(nails, "admin", " Поступление гвоздей 100мм."));
+        productHistoryRepository.save(new ProductHistory(screws, "admin", " Саморезы завезены на склад."));
+        productHistoryRepository.save(new ProductHistory(paint, "admin", " Краска белая поступила."));
+        productHistoryRepository.save(new ProductHistory(brush, "admin", " Кисть малярная добавлена."));
 
         Supplier supplier1 = supplierRepository.save(
                 Supplier.builder()
@@ -161,11 +156,12 @@ public class DataInitializer implements CommandLineRunner {
         );
         stockRepository.saveAll(stocks);
 
-        log.info("✅ Тестовые данные успешно загружены!");
-        log.info("📊 Категорий: {}", categoryRepository.count());
-        log.info("📦 Товаров: {}", productRepository.count());
-        log.info("🏭 Поставщиков: {}", supplierRepository.count());
-        log.info("🏢 Складов: {}", warehouseRepository.count());
-        log.info("📋 Остатков: {}", stockRepository.count());
+        log.info("Тестовые данные успешно загружены!");
+        log.info(" Категорий: {}", categoryRepository.count());
+        log.info(" Товаров: {}", productRepository.count());
+        log.info(" Поставщиков: {}", supplierRepository.count());
+        log.info(" Складов: {}", warehouseRepository.count());
+        log.info(" Остатков: {}", stockRepository.count());
+        log.info(" Историй: {}", productHistoryRepository.count());
     }
 }

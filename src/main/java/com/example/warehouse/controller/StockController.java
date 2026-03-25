@@ -111,4 +111,7 @@ public class StockController {
         stockService.transferStock(productId, fromWarehouseId, toWarehouseId, amount);
         return ResponseEntity.ok().build();
     }
+
+
+
 }

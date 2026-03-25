@@ -2,17 +2,16 @@ package com.example.warehouse.service;
 
 import com.example.warehouse.dto.ProductDto;
 import com.example.warehouse.exception.ResourceNotFoundException;
+import com.example.warehouse.mapper.ProductHistoryMapper;
 import com.example.warehouse.mapper.ProductMapper;
-import com.example.warehouse.model.entity.Category;
-import com.example.warehouse.model.entity.Product;
-import com.example.warehouse.model.entity.Supplier;
-import com.example.warehouse.repository.CategoryRepository;
-import com.example.warehouse.repository.ProductRepository;
-import com.example.warehouse.repository.SupplierRepository;
+import com.example.warehouse.model.entity.*;
+import com.example.warehouse.dto.ProductHistoryDto;
+import com.example.warehouse.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,6 +25,8 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final SupplierRepository supplierRepository;
     private final ProductMapper productMapper;
+    private final ProductHistoryRepository productHistoryRepository;
+    private final ProductHistoryMapper productHistoryMapper;
 
     private static final String NOT_FOUND_ID_MSG = "Product not found with id: ";
     private static final String CATEGORY_NOT_FOUND_MSG = "Category not found with id: ";
@@ -81,6 +82,11 @@ public class ProductService {
         setCategoryIfPresent(product, productDto.getCategoryId());
         setSuppliersIfPresent(product, productDto.getSupplierIds());
 
+        if (productDto.getHistory() != null) {
+            ProductHistory history = productHistoryMapper.toEntity(productDto.getHistory());
+            product.setHistory(history);
+        }
+
         Product savedProduct = productRepository.save(product);
         return productMapper.toDto(savedProduct);
     }
@@ -117,5 +123,61 @@ public class ProductService {
         return productRepository.findByCategoryId(categoryId).stream()
                 .map(productMapper::toDto)
                 .toList();
+    }
+
+    public ProductHistoryDto getProductHistory(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + productId));
+
+        if (product.getHistory() == null) {
+            return null;
+        }
+
+        return productHistoryMapper.toDto(product.getHistory());
+    }
+
+    public void createProductWithHistoryNoTx(ProductDto productDto) {
+        Product product = productMapper.toEntity(productDto);
+        setCategoryIfPresent(product, productDto.getCategoryId());
+        setSuppliersIfPresent(product, productDto.getSupplierIds());
+
+        Product savedProduct = productRepository.save(product);
+
+        if (productDto.getHistory() != null) {
+            String createdBy = productDto.getHistory().getCreatedBy();
+
+            if (createdBy == null || createdBy.isBlank()) {
+                throw new IllegalArgumentException("Ошибка! createdBy не может быть пустым");
+            }
+
+            ProductHistory history = new ProductHistory(savedProduct, createdBy);
+            history.setDescription(productDto.getHistory().getDescription());
+
+            productHistoryRepository.save(history);
+            savedProduct.setHistory(history);
+        }
+    }
+
+    @Transactional
+    public void createProductWithHistoryTx(ProductDto productDto) {
+        Product product = productMapper.toEntity(productDto);
+        setCategoryIfPresent(product, productDto.getCategoryId());
+        setSuppliersIfPresent(product, productDto.getSupplierIds());
+
+        Product savedProduct = productRepository.save(product);
+
+        if (productDto.getHistory() != null) {
+            String createdBy = productDto.getHistory().getCreatedBy();
+
+            if (createdBy == null || createdBy.isBlank()) {
+                throw new IllegalArgumentException("Ошибка! createdBy не может быть пустым");
+            }
+
+            ProductHistory history = new ProductHistory(savedProduct, createdBy);
+            history.setDescription(productDto.getHistory().getDescription());
+
+            productHistoryRepository.save(history);
+            savedProduct.setHistory(history);
+        }
     }
 }
