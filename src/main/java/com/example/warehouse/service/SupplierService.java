@@ -5,6 +5,7 @@ import com.example.warehouse.exception.ResourceNotFoundException;
 import com.example.warehouse.mapper.SupplierMapper;
 import com.example.warehouse.model.entity.Supplier;
 import com.example.warehouse.repository.SupplierRepository;
+import com.example.warehouse.exception.DemoTransactionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -68,7 +69,7 @@ public class SupplierService {
         Supplier supplier = supplierMapper.toEntity(supplierDto);
         Supplier savedSupplier = supplierRepository.save(supplier);
 
-        throw new RuntimeException(" ДЕМОНСТРАЦИЯ: Ошибка после сохранения поставщика!" + savedSupplier.getId());
+        throw new DemoTransactionException("ДЕМОНСТРАЦИЯ: Ошибка после сохранения поставщика! " + savedSupplier.getId());
     }
 
     @Transactional
@@ -76,7 +77,7 @@ public class SupplierService {
         Supplier supplier = supplierMapper.toEntity(supplierDto);
         Supplier savedSupplier = supplierRepository.save(supplier);
 
-        throw new RuntimeException(" ДЕМОНСТРАЦИЯ: Ошибка после сохранения поставщика!" + savedSupplier.getId());
+        throw new DemoTransactionException("ДЕМОНСТРАЦИЯ: Ошибка после сохранения поставщика! " + savedSupplier.getId());
     }
 
     @Transactional
