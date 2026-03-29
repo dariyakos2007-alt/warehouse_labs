@@ -28,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -195,7 +194,7 @@ public class ProductService {
         List<Product> products = productRepository.findByCategoryAndMaxPrice(categoryName, maxPrice);
         return products.stream()
                 .map(productMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -214,7 +213,7 @@ public class ProductService {
         List<Product> products = productRepository.findByCategoryAndMaxPriceNative(categoryName, maxPrice);
         return products.stream()
                 .map(productMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)
