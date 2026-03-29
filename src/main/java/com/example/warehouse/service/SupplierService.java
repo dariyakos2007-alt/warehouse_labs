@@ -68,7 +68,7 @@ public class SupplierService {
         Supplier supplier = supplierMapper.toEntity(supplierDto);
         Supplier savedSupplier = supplierRepository.save(supplier);
 
-        throw new RuntimeException(" ДЕМОНСТРАЦИЯ: Ошибка после сохранения поставщика!"+ savedSupplier.getId());
+        throw new RuntimeException(" ДЕМОНСТРАЦИЯ: Ошибка после сохранения поставщика!" + savedSupplier.getId());
     }
 
     @Transactional
@@ -76,7 +76,7 @@ public class SupplierService {
         Supplier supplier = supplierMapper.toEntity(supplierDto);
         Supplier savedSupplier = supplierRepository.save(supplier);
 
-        throw new RuntimeException(" ДЕМОНСТРАЦИЯ: Ошибка после сохранения поставщика!"+ savedSupplier.getId());
+        throw new RuntimeException(" ДЕМОНСТРАЦИЯ: Ошибка после сохранения поставщика!" + savedSupplier.getId());
     }
 
     @Transactional

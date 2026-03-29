@@ -1,20 +1,34 @@
 package com.example.warehouse.service;
 
+import com.example.warehouse.cache.ProductCache;
+import com.example.warehouse.cache.ProductSearchKey;
 import com.example.warehouse.dto.ProductDto;
 import com.example.warehouse.exception.ResourceNotFoundException;
-import com.example.warehouse.mapper.ProductHistoryMapper;
 import com.example.warehouse.mapper.ProductMapper;
-import com.example.warehouse.model.entity.*;
-import com.example.warehouse.dto.ProductHistoryDto;
-import com.example.warehouse.repository.*;
+import com.example.warehouse.model.entity.Category;
+import com.example.warehouse.model.entity.Product;
+import com.example.warehouse.model.entity.Stock;
+import com.example.warehouse.model.entity.Supplier;
+import com.example.warehouse.model.entity.Warehouse;
+import com.example.warehouse.repository.CategoryRepository;
+import com.example.warehouse.repository.ProductRepository;
+import com.example.warehouse.repository.StockRepository;
+import com.example.warehouse.repository.SupplierRepository;
+import com.example.warehouse.repository.WarehouseRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -25,12 +39,20 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final SupplierRepository supplierRepository;
     private final ProductMapper productMapper;
-    private final ProductHistoryRepository productHistoryRepository;
-    private final ProductHistoryMapper productHistoryMapper;
+    private final WarehouseRepository warehouseRepository;
+    private final StockRepository stockRepository;
+    private final ProductCache productCache;
 
     private static final String NOT_FOUND_ID_MSG = "Product not found with id: ";
     private static final String CATEGORY_NOT_FOUND_MSG = "Category not found with id: ";
     private static final String SUPPLIER_NOT_FOUND_MSG = "Supplier not found with id: ";
+
+    private ProductService self;
+
+    @PostConstruct
+    public void init() {
+        this.self = this;
+    }
 
     private void setCategoryIfPresent(Product product, Long categoryId) {
         if (categoryId != null) {
@@ -82,12 +104,11 @@ public class ProductService {
         setCategoryIfPresent(product, productDto.getCategoryId());
         setSuppliersIfPresent(product, productDto.getSupplierIds());
 
-        if (productDto.getHistory() != null) {
-            ProductHistory history = productHistoryMapper.toEntity(productDto.getHistory());
-            product.setHistory(history);
-        }
-
         Product savedProduct = productRepository.save(product);
+
+        productCache.clearAll();
+        log.info("Cache cleared after creating product with id: {}", savedProduct.getId());
+
         return productMapper.toDto(savedProduct);
     }
 
@@ -102,6 +123,10 @@ public class ProductService {
         setSuppliersIfPresent(product, productDto.getSupplierIds());
 
         Product updatedProduct = productRepository.save(product);
+
+        productCache.clearAll();
+        log.info("Cache cleared after updating product with id: {}", updatedProduct.getId());
+
         return productMapper.toDto(updatedProduct);
     }
 
@@ -111,6 +136,9 @@ public class ProductService {
             throw new ResourceNotFoundException(NOT_FOUND_ID_MSG + id);
         }
         productRepository.deleteById(id);
+
+        productCache.clearAll();
+        log.info("Cache cleared after deleting product with id: {}", id);
     }
 
     public List<ProductDto> searchProductsByName(String name) {
@@ -125,59 +153,104 @@ public class ProductService {
                 .toList();
     }
 
-    public ProductHistoryDto getProductHistory(Long productId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + productId));
-
-        if (product.getHistory() == null) {
-            return null;
-        }
-
-        return productHistoryMapper.toDto(product.getHistory());
-    }
-
-    public void createProductWithHistoryNoTx(ProductDto productDto) {
+    public void createProductWithStockNoTx(ProductDto productDto, Long warehouseId, Integer quantity) {
         Product product = productMapper.toEntity(productDto);
         setCategoryIfPresent(product, productDto.getCategoryId());
         setSuppliersIfPresent(product, productDto.getSupplierIds());
 
         Product savedProduct = productRepository.save(product);
 
-        if (productDto.getHistory() != null) {
-            String createdBy = productDto.getHistory().getCreatedBy();
+        Warehouse warehouse = warehouseRepository.findById(warehouseId)
+                .orElseThrow(() -> new IllegalArgumentException("Склад не найден"));
 
-            if (createdBy == null || createdBy.isBlank()) {
-                throw new IllegalArgumentException("Ошибка! createdBy не может быть пустым");
-            }
-
-            ProductHistory history = new ProductHistory(savedProduct, createdBy);
-            history.setDescription(productDto.getHistory().getDescription());
-
-            productHistoryRepository.save(history);
-            savedProduct.setHistory(history);
+        if (quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException("количество должно быть положительным! Остаток НЕ сохранён");
         }
+
+        Stock stock = new Stock(savedProduct, warehouse, quantity);
+        stockRepository.save(stock);
     }
 
     @Transactional
-    public void createProductWithHistoryTx(ProductDto productDto) {
+    public void createProductWithStockTx(ProductDto productDto, Long warehouseId, Integer quantity) {
         Product product = productMapper.toEntity(productDto);
         setCategoryIfPresent(product, productDto.getCategoryId());
         setSuppliersIfPresent(product, productDto.getSupplierIds());
 
         Product savedProduct = productRepository.save(product);
 
-        if (productDto.getHistory() != null) {
-            String createdBy = productDto.getHistory().getCreatedBy();
+        Warehouse warehouse = warehouseRepository.findById(warehouseId)
+                .orElseThrow(() -> new IllegalArgumentException("Склад не найден"));
 
-            if (createdBy == null || createdBy.isBlank()) {
-                throw new IllegalArgumentException("Ошибка! createdBy не может быть пустым");
-            }
-
-            ProductHistory history = new ProductHistory(savedProduct, createdBy);
-            history.setDescription(productDto.getHistory().getDescription());
-
-            productHistoryRepository.save(history);
-            savedProduct.setHistory(history);
+        if (quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException("количество должно быть положительным! Транзакция откатится");
         }
+
+        Stock stock = new Stock(savedProduct, warehouse, quantity);
+        stockRepository.save(stock);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductDto> getProductsByCategoryAndMaxPrice(String categoryName, Double maxPrice) {
+        List<Product> products = productRepository.findByCategoryAndMaxPrice(categoryName, maxPrice);
+        return products.stream()
+                .map(productMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductDto> getProductsByCategoryAndMaxPricePaged(
+            String categoryName, Double maxPrice, int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        Page<Product> productPage = productRepository.findByCategoryAndMaxPricePaged(
+                categoryName, maxPrice, pageable);
+
+        return productPage.map(productMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductDto> getProductsByCategoryAndMaxPriceNative(String categoryName, Double maxPrice) {
+        List<Product> products = productRepository.findByCategoryAndMaxPriceNative(categoryName, maxPrice);
+        return products.stream()
+                .map(productMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductDto> getProductsByCategoryAndMaxPriceNativePaged(
+            String categoryName, Double maxPrice, int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        Page<Product> productPage = productRepository.findByCategoryAndMaxPriceNativePaged(
+                categoryName, maxPrice, pageable);
+
+        return productPage.map(productMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductDto> getProductsByCategoryAndMaxPriceCached(
+            String categoryName, Double maxPrice, int page, int size) {
+
+        ProductSearchKey key = new ProductSearchKey(categoryName, maxPrice, page, size, "name");
+
+        Page<ProductDto> cached = productCache.get(key);
+        if (cached != null) {
+            log.info("Cache HIT for key: category={}, maxPrice={}, page={}, size={}",
+                    categoryName, maxPrice, page, size);
+            return cached;
+        }
+
+        log.info("Cache MISS for key: category={}, maxPrice={}, page={}, size={}",
+                categoryName, maxPrice, page, size);
+
+        Page<ProductDto> result = self.getProductsByCategoryAndMaxPricePaged(
+                categoryName, maxPrice, page, size);
+
+        productCache.put(key, result);
+        log.info("Result cached for key: category={}, maxPrice={}, page={}, size={}",
+                categoryName, maxPrice, page, size);
+
+        return result;
     }
 }

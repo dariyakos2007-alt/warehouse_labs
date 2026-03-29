@@ -2,7 +2,7 @@ package com.example.warehouse.controller;
 
 import com.example.warehouse.dto.ProductDto;
 import com.example.warehouse.service.ProductService;
-import com.example.warehouse.dto.ProductHistoryDto;
+import com.example.warehouse.dto.CreateProductWithStockRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.data.domain.Page;
 import java.util.List;
 
 @RestController
@@ -77,32 +78,77 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}/history")
-    public ResponseEntity<ProductHistoryDto> getProductHistory(@PathVariable Long id) {
-        ProductHistoryDto history = productService.getProductHistory(id);
-        if (history == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(history);
-    }
-
-    @PostMapping("/demo/no-tx")
-    public ResponseEntity<String> createNoTx(@RequestBody ProductDto productDto) {
+    @PostMapping("/demo/create-with-stock/no-tx")
+    public ResponseEntity<String> createProductWithStockNoTx(@RequestBody CreateProductWithStockRequest request) {
         try {
-            productService.createProductWithHistoryNoTx(productDto);
+            productService.createProductWithStockNoTx(request.getProduct(), request.getWarehouseId(), request.getQuantity());
             return ResponseEntity.ok("ok");
         } catch (Exception e) {
             return ResponseEntity.status(500).body(e.getMessage());
         }
     }
 
-    @PostMapping("/demo/tx")
-    public ResponseEntity<String> createTx(@RequestBody ProductDto productDto) {
+    @PostMapping("/demo/create-with-stock/with-tx")
+    public ResponseEntity<String> createProductWithStockTx(@RequestBody CreateProductWithStockRequest request) {
         try {
-            productService.createProductWithHistoryTx(productDto);
+            productService.createProductWithStockTx(request.getProduct(), request.getWarehouseId(), request.getQuantity());
             return ResponseEntity.ok("ok");
         } catch (Exception e) {
             return ResponseEntity.status(500).body(e.getMessage());
         }
+    }
+
+    @GetMapping("/by-category")
+    public ResponseEntity<List<ProductDto>> getProductsByCategoryAndPrice(
+            @RequestParam String categoryName,
+            @RequestParam Double maxPrice) {
+
+        List<ProductDto> products = productService.getProductsByCategoryAndMaxPrice(categoryName, maxPrice);
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/by-category-paged")
+    public ResponseEntity<Page<ProductDto>> getProductsByCategoryAndPricePaged(
+            @RequestParam String categoryName,
+            @RequestParam Double maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<ProductDto> products = productService.getProductsByCategoryAndMaxPricePaged(
+                categoryName, maxPrice, page, size);
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/by-category-cached")
+    public ResponseEntity<Page<ProductDto>> getProductsByCategoryAndPriceCached(
+            @RequestParam String categoryName,
+            @RequestParam Double maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<ProductDto> products = productService.getProductsByCategoryAndMaxPriceCached(
+                categoryName, maxPrice, page, size);
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/by-category-native")
+    public ResponseEntity<List<ProductDto>> getProductsByCategoryAndPriceNative(
+            @RequestParam String categoryName,
+            @RequestParam Double maxPrice) {
+
+        List<ProductDto> products = productService.getProductsByCategoryAndMaxPriceNative(categoryName, maxPrice);
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/by-category-native-paged")
+    public ResponseEntity<Page<ProductDto>> getProductsByCategoryAndPriceNativePaged(
+            @RequestParam String categoryName,
+            @RequestParam Double maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<ProductDto> products = productService.getProductsByCategoryAndMaxPriceNativePaged(
+                categoryName, maxPrice, page, size);
+        return ResponseEntity.ok(products);
     }
 }

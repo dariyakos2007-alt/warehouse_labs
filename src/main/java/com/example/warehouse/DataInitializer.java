@@ -1,7 +1,15 @@
 package com.example.warehouse;
 
-import com.example.warehouse.model.entity.*;
-import com.example.warehouse.repository.*;
+import com.example.warehouse.model.entity.Category;
+import com.example.warehouse.model.entity.Product;
+import com.example.warehouse.model.entity.Stock;
+import com.example.warehouse.model.entity.Supplier;
+import com.example.warehouse.model.entity.Warehouse;
+import com.example.warehouse.repository.CategoryRepository;
+import com.example.warehouse.repository.ProductRepository;
+import com.example.warehouse.repository.StockRepository;
+import com.example.warehouse.repository.SupplierRepository;
+import com.example.warehouse.repository.WarehouseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -20,7 +28,6 @@ public class DataInitializer implements CommandLineRunner {
     private final SupplierRepository supplierRepository;
     private final WarehouseRepository warehouseRepository;
     private final StockRepository stockRepository;
-    private final ProductHistoryRepository productHistoryRepository;
 
     @Override
     @Transactional
@@ -58,14 +65,6 @@ public class DataInitializer implements CommandLineRunner {
         screws = productRepository.save(screws);
         paint = productRepository.save(paint);
         brush = productRepository.save(brush);
-
-        productHistoryRepository.save(new ProductHistory(hammer, "admin", "Молоток поступил на склад."));
-        productHistoryRepository.save(new ProductHistory(screwdriver, "admin", " Отвертка добавлена в ассортимент. "));
-        productHistoryRepository.save(new ProductHistory(drill, "admin", "Дрель прибыла на склад."));
-        productHistoryRepository.save(new ProductHistory(nails, "admin", " Поступление гвоздей 100мм."));
-        productHistoryRepository.save(new ProductHistory(screws, "admin", " Саморезы завезены на склад."));
-        productHistoryRepository.save(new ProductHistory(paint, "admin", " Краска белая поступила."));
-        productHistoryRepository.save(new ProductHistory(brush, "admin", " Кисть малярная добавлена."));
 
         Supplier supplier1 = supplierRepository.save(
                 Supplier.builder()
@@ -162,6 +161,5 @@ public class DataInitializer implements CommandLineRunner {
         log.info(" Поставщиков: {}", supplierRepository.count());
         log.info(" Складов: {}", warehouseRepository.count());
         log.info(" Остатков: {}", stockRepository.count());
-        log.info(" Историй: {}", productHistoryRepository.count());
     }
 }

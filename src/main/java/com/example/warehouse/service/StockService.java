@@ -159,13 +159,13 @@ public class StockService {
     }
 
     public List<StockDto> getAllStocksWithProblem() {
-     return stockRepository.findAll().stream()
+        return stockRepository.findAll().stream()
                 .map(stockMapper::toDto)
                 .toList();
     }
 
     public List<StockDto> getAllStocksWithJoinFetch() {
-       return stockRepository.findAllWithWarehouseAndProduct().stream()
+        return stockRepository.findAllWithWarehouseAndProduct().stream()
                 .map(stockMapper::toDto)
                 .toList();
     }

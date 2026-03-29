@@ -19,5 +19,4 @@ public class ProductDto {
     private String categoryName;
     private Set<Long> supplierIds;
     private Integer totalStock;
-    private ProductHistoryDto history;
 }
