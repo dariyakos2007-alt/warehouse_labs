@@ -65,19 +65,19 @@ public class SupplierService {
         return supplierMapper.toDto(savedSupplier);
     }
 
-    public SupplierDto createSupplierNotTransactional(SupplierDto supplierDto) {
+    private SupplierDto createSupplierInternal(SupplierDto supplierDto) {
         Supplier supplier = supplierMapper.toEntity(supplierDto);
         Supplier savedSupplier = supplierRepository.save(supplier);
-
         throw new DemoTransactionException("ДЕМОНСТРАЦИЯ: Ошибка после сохранения поставщика! " + savedSupplier.getId());
+    }
+
+    public SupplierDto createSupplierNotTransactional(SupplierDto supplierDto) {
+        return createSupplierInternal(supplierDto);
     }
 
     @Transactional
     public SupplierDto createSupplierTransactional(SupplierDto supplierDto) {
-        Supplier supplier = supplierMapper.toEntity(supplierDto);
-        Supplier savedSupplier = supplierRepository.save(supplier);
-
-        throw new DemoTransactionException("ДЕМОНСТРАЦИЯ: Ошибка после сохранения поставщика! " + savedSupplier.getId());
+        return createSupplierInternal(supplierDto);
     }
 
     @Transactional
