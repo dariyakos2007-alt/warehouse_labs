@@ -22,19 +22,19 @@ public class WarehouseService {
     private static final String NOT_FOUND_ID_MSG = "Warehouse not found with id: ";
 
     public List<WarehouseDto> getAllWarehouses() {
-        return warehouseRepository.findAll().stream()
+        return warehouseRepository.findAllWithStocks().stream()
                 .map(warehouseMapper::toDto)
                 .toList();
     }
 
     public WarehouseDto getWarehouseById(Long id) {
-        Warehouse warehouse = warehouseRepository.findById(id)
+        Warehouse warehouse = warehouseRepository.findByIdWithStocks(id)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
         return warehouseMapper.toDto(warehouse);
     }
 
     public WarehouseDto getWarehouseByName(String name) {
-        Warehouse warehouse = warehouseRepository.findByName(name)
+        Warehouse warehouse = warehouseRepository.findByNameWithStocks(name)
                 .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found with name: " + name));
         return warehouseMapper.toDto(warehouse);
     }

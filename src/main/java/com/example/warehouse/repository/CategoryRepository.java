@@ -11,11 +11,14 @@ import java.util.Optional;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
-    Optional<Category> findByName(String name);
-
     boolean existsByName(String name);
 
-    List<Category> findByNameContainingIgnoreCase(String name);
+    @Query("SELECT DISTINCT c FROM Category c LEFT JOIN FETCH c.products WHERE c.name = :name")
+    Optional<Category> findByNameWithProducts(@Param("name") String name);
+
+    @Query("SELECT DISTINCT c FROM Category c LEFT JOIN FETCH c.products " +
+            "WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%'))")
+    List<Category> findByNameContainingIgnoreCaseWithProducts(@Param("name") String name);
 
     @Query("SELECT DISTINCT c FROM Category c LEFT JOIN FETCH c.products WHERE c.id = :id")
     Optional<Category> findByIdWithProducts(@Param("id") Long id);

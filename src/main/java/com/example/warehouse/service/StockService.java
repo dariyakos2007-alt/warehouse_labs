@@ -31,13 +31,13 @@ public class StockService {
     private static final String WAREHOUSE_NOT_FOUND_MSG = "Warehouse not found with id: ";
 
     public List<StockDto> getAllStocks() {
-        return stockRepository.findAll().stream()
+        return stockRepository.findAllWithDetails().stream()
                 .map(stockMapper::toDto)
                 .toList();
     }
 
     public StockDto getStockById(Long id) {
-        Stock stock = stockRepository.findById(id)
+        Stock stock = stockRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
         return stockMapper.toDto(stock);
     }
@@ -55,26 +55,26 @@ public class StockService {
     }
 
     public List<StockDto> getStocksByProduct(Long productId) {
-        return stockRepository.findByProductId(productId).stream()
+        return stockRepository.findByProductIdWithDetails(productId).stream()
                 .map(stockMapper::toDto)
                 .toList();
     }
 
     public List<StockDto> getStocksByWarehouse(Long warehouseId) {
-        return stockRepository.findByWarehouseId(warehouseId).stream()
+        return stockRepository.findByWarehouseIdWithDetails(warehouseId).stream()
                 .map(stockMapper::toDto)
                 .toList();
     }
 
     public StockDto getStockByProductAndWarehouse(Long productId, Long warehouseId) {
-        Stock stock = stockRepository.findByProductIdAndWarehouseId(productId, warehouseId)
+        Stock stock = stockRepository.findByProductIdAndWarehouseIdWithDetails(productId, warehouseId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Stock not found for product " + productId + " and warehouse " + warehouseId));
         return stockMapper.toDto(stock);
     }
 
     public List<StockDto> getOverStock() {
-        return stockRepository.findOverStock().stream()
+        return stockRepository.findOverStockWithDetails().stream()
                 .map(stockMapper::toDto)
                 .toList();
     }
@@ -159,7 +159,7 @@ public class StockService {
     }
 
     public List<StockDto> getAllStocksWithProblem() {
-        return stockRepository.findAll().stream()
+        return stockRepository.findAllWithDetails().stream()
                 .map(stockMapper::toDto)
                 .toList();
     }

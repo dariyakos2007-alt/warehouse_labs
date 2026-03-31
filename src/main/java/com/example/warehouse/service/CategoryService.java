@@ -24,25 +24,25 @@ public class CategoryService {
     private static final String EXISTS_MSG = "Category with name ";
 
     public List<CategoryDto> getAllCategories() {
-        return categoryRepository.findAll().stream()
+        return categoryRepository.findAllWithProducts().stream()
                 .map(categoryMapper::toDto)
                 .toList();
     }
 
     public CategoryDto getCategoryById(Long id) {
-        Category category = categoryRepository.findById(id)
+        Category category = categoryRepository.findByIdWithProducts(id)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
         return categoryMapper.toDto(category);
     }
 
     public CategoryDto getCategoryByName(String name) {
-        Category category = categoryRepository.findByName(name)
+        Category category = categoryRepository.findByNameWithProducts(name)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_NAME_MSG + name));
         return categoryMapper.toDto(category);
     }
 
     public List<CategoryDto> searchCategoriesByName(String name) {
-        return categoryRepository.findByNameContainingIgnoreCase(name).stream()
+        return categoryRepository.findByNameContainingIgnoreCaseWithProducts(name).stream()
                 .map(categoryMapper::toDto)
                 .toList();
     }

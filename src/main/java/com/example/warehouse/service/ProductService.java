@@ -19,15 +19,19 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -80,19 +84,19 @@ public class ProductService {
     }
 
     public ProductDto getProductById(Long id) {
-        Product product = productRepository.findById(id)
+        Product product = productRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
         return productMapper.toDto(product);
     }
 
     public ProductDto getProductWithDetails(Long id) {
-        Product product = productRepository.findByIdWithCategory(id)
+        Product product = productRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
         return productMapper.toDto(product);
     }
 
     public List<ProductDto> getAllProductsWithDetails() {
-        return productRepository.findAllWithDetails().stream()
+        return productRepository.findAllWithStocksAndCategory().stream()
                 .map(productMapper::toDto)
                 .toList();
     }
@@ -141,13 +145,13 @@ public class ProductService {
     }
 
     public List<ProductDto> searchProductsByName(String name) {
-        return productRepository.findByNameContainingIgnoreCase(name).stream()
+        return productRepository.findByNameContainingIgnoreCaseWithDetails(name).stream()
                 .map(productMapper::toDto)
                 .toList();
     }
 
     public List<ProductDto> getProductsByCategory(Long categoryId) {
-        return productRepository.findByCategoryId(categoryId).stream()
+        return productRepository.findByCategoryIdWithDetails(categoryId).stream()
                 .map(productMapper::toDto)
                 .toList();
     }
@@ -190,28 +194,6 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductDto> getProductsByCategoryAndMaxPriceWithFetch(
-            String categoryName, Double maxPrice, int page, int size) {
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
-        Page<Product> productPage = productRepository.findByCategoryAndMaxPriceWithFetch(
-                categoryName, maxPrice, pageable);
-
-        return productPage.map(productMapper::toDto);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<ProductDto> getProductsByCategoryAndMaxPriceNativeWithFetch(
-            String categoryName, Double maxPrice, int page, int size) {
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
-        Page<Product> productPage = productRepository.findByCategoryAndMaxPriceNativeWithFetch(
-                categoryName, maxPrice, pageable);
-
-        return productPage.map(productMapper::toDto);
-    }
-
-    @Transactional(readOnly = true)
     public Page<ProductDto> getProductsByCategoryAndMaxPriceCached(
             String categoryName, Double maxPrice, int page, int size) {
 
@@ -219,21 +201,64 @@ public class ProductService {
 
         Page<ProductDto> cached = productCache.get(key);
         if (cached != null) {
-            log.info("Cache HIT for key: category={}, maxPrice={}, page={}, size={}",
-                    categoryName, maxPrice, page, size);
+            log.info("Cache HIT for key: {}", key);
             return cached;
         }
 
-        log.info("Cache MISS for key: category={}, maxPrice={}, page={}, size={}",
-                categoryName, maxPrice, page, size);
+        log.info("Cache MISS for key: {}", key);
 
-        Page<ProductDto> result = self.getProductsByCategoryAndMaxPriceWithFetch(
-                categoryName, maxPrice, page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        Page<Product> productPage = productRepository.findByCategoryAndMaxPriceWithFetch(
+                categoryName, maxPrice, pageable);
+
+        Page<ProductDto> result = productPage.map(productMapper::toDto);
+        productCache.put(key, result);
+        log.info("Result cached for key: {}", key);
+
+        return result;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductDto> getProductsByCategoryAndMaxPriceNativeCached(
+            String categoryName, Double maxPrice, int page, int size) {
+
+        ProductSearchKey key = new ProductSearchKey(categoryName, maxPrice, page, size, "name");
+
+        Page<ProductDto> cached = productCache.get(key);
+        if (cached != null) {
+            log.info("Cache HIT for key: {}", key);
+            return cached;
+        }
+
+        log.info("Cache MISS for key: {}", key);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+
+        Page<Long> idsPage = productRepository.findProductIdsByCategoryAndMaxPriceNative(
+                categoryName, maxPrice, pageable);
+
+        if (idsPage.isEmpty()) {
+            Page<ProductDto> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+            productCache.put(key, emptyPage);
+            return emptyPage;
+        }
+
+        List<Product> products = productRepository.findAllWithDetailsByIds(idsPage.getContent());
+
+        Map<Long, Product> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getId, p -> p));
+
+        List<ProductDto> sortedProducts = idsPage.getContent().stream()
+                .map(productMap::get)
+                .map(productMapper::toDto)
+                .toList();
+
+        Page<ProductDto> result = new PageImpl<>(sortedProducts, pageable, idsPage.getTotalElements());
 
         productCache.put(key, result);
-        log.info("Result cached for key: category={}, maxPrice={}, page={}, size={}",
-                categoryName, maxPrice, page, size);
+        log.info("Result cached for key: {}", key);
 
         return result;
     }
 }
+

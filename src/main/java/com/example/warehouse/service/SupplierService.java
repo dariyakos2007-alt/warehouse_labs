@@ -23,25 +23,25 @@ public class SupplierService {
     private static final String NOT_FOUND_ID_MSG = "Supplier not found with id: ";
 
     public List<SupplierDto> getAllSuppliers() {
-        return supplierRepository.findAll().stream()
+        return supplierRepository.findAllWithProducts().stream()
                 .map(supplierMapper::toDto)
                 .toList();
     }
 
     public SupplierDto getSupplierById(Long id) {
-        Supplier supplier = supplierRepository.findById(id)
+        Supplier supplier = supplierRepository.findByIdWithProducts(id)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
         return supplierMapper.toDto(supplier);
     }
 
     public SupplierDto getSupplierByName(String name) {
-        Supplier supplier = supplierRepository.findByName(name)
+        Supplier supplier = supplierRepository.findByNameWithProducts(name)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier not found with name: " + name));
         return supplierMapper.toDto(supplier);
     }
 
     public SupplierDto getSupplierByEmail(String email) {
-        Supplier supplier = supplierRepository.findByEmail(email)
+        Supplier supplier = supplierRepository.findByEmailWithProducts(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier not found with email: " + email));
         return supplierMapper.toDto(supplier);
     }
@@ -53,7 +53,7 @@ public class SupplierService {
     }
 
     public List<SupplierDto> searchSuppliersByName(String name) {
-        return supplierRepository.findByNameContainingIgnoreCase(name).stream()
+        return supplierRepository.findByNameContainingIgnoreCaseWithProducts(name).stream()
                 .map(supplierMapper::toDto)
                 .toList();
     }

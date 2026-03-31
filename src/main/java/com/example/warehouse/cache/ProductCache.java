@@ -4,13 +4,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import com.example.warehouse.dto.ProductDto;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class ProductCache {
 
-    private final Map<ProductSearchKey, Page<ProductDto>> cache = new ConcurrentHashMap<>();
+    private final Map<ProductSearchKey, Page<ProductDto>> cache = new HashMap<>();
 
     public Page<ProductDto> get(ProductSearchKey key) {
         return cache.get(key);
