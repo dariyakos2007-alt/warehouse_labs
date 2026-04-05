@@ -19,25 +19,34 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
 
-    private static final String NOT_FOUND_ID_MSG = "Category not found with id: ";
-    private static final String NOT_FOUND_NAME_MSG = "Category not found with name: ";
-    private static final String EXISTS_MSG = "Category with name ";
+    private static final String NOT_FOUND_ID_MSG = "Категория не найдена с ID: ";
+    private static final String NOT_FOUND_NAME_MSG = "Категория не найдена с названием: ";
+    private static final String EXISTS_MSG = "Категория с именем ";
 
     public List<CategoryDto> getAllCategories() {
+        log.debug("Поиск всех категорий");
         return categoryRepository.findAllWithProducts().stream()
                 .map(categoryMapper::toDto)
                 .toList();
     }
 
     public CategoryDto getCategoryById(Long id) {
+        log.debug("Поиск категории по ID: {}", id);
         Category category = categoryRepository.findByIdWithProducts(id)
-                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
+                .orElseThrow(() -> {
+                    log.warn("Категория с ID {} не найдена", id);
+                    return new ResourceNotFoundException(NOT_FOUND_ID_MSG + id);
+                });
         return categoryMapper.toDto(category);
     }
 
     public CategoryDto getCategoryByName(String name) {
+        log.debug("Поиск категории по названию: {}", name);
         Category category = categoryRepository.findByNameWithProducts(name)
-                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_NAME_MSG + name));
+                .orElseThrow(() -> {
+                    log.warn("Категория с названием {} не найдена", name);
+                    return new ResourceNotFoundException(NOT_FOUND_NAME_MSG + name);
+                });
         return categoryMapper.toDto(category);
     }
 
@@ -50,7 +59,7 @@ public class CategoryService {
     @Transactional
     public CategoryDto createCategory(CategoryDto categoryDto) {
         if (categoryRepository.existsByName(categoryDto.getName())) {
-            throw new IllegalArgumentException(EXISTS_MSG + categoryDto.getName() + " already exists");
+            throw new IllegalArgumentException(EXISTS_MSG + categoryDto.getName() + " уже существует.");
         }
         Category category = categoryMapper.toEntity(categoryDto);
         Category savedCategory = categoryRepository.save(category);

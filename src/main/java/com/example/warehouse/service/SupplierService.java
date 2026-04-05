@@ -20,29 +20,38 @@ public class SupplierService {
     private final SupplierRepository supplierRepository;
     private final SupplierMapper supplierMapper;
 
-    private static final String NOT_FOUND_ID_MSG = "Supplier not found with id: ";
+    private static final String NOT_FOUND_ID_MSG = "Поставщик не найден с id: ";
 
     public List<SupplierDto> getAllSuppliers() {
+        log.debug("Поиск всех поставщиков");
         return supplierRepository.findAllWithProducts().stream()
                 .map(supplierMapper::toDto)
                 .toList();
     }
 
     public SupplierDto getSupplierById(Long id) {
+        log.debug("Поиск поставщика по ID: {}", id);
         Supplier supplier = supplierRepository.findByIdWithProducts(id)
-                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
+                .orElseThrow(() -> {
+                    log.warn("Поставщик с ID {} не найден", id);
+                    return new ResourceNotFoundException(NOT_FOUND_ID_MSG + id);
+                });
         return supplierMapper.toDto(supplier);
     }
 
     public SupplierDto getSupplierByName(String name) {
+        log.debug("Поиск поставщика по названию: {}", name);
         Supplier supplier = supplierRepository.findByNameWithProducts(name)
-                .orElseThrow(() -> new ResourceNotFoundException("Supplier not found with name: " + name));
+                .orElseThrow(() -> {
+                    log.warn("Поставщик с названием {} не найден", name);
+                    return new ResourceNotFoundException("Поставщик не найден с именем: " + name);
+                });
         return supplierMapper.toDto(supplier);
     }
 
     public SupplierDto getSupplierByEmail(String email) {
         Supplier supplier = supplierRepository.findByEmailWithProducts(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Supplier not found with email: " + email));
+                .orElseThrow(() -> new ResourceNotFoundException("Поставщик не найден с email: " + email));
         return supplierMapper.toDto(supplier);
     }
 

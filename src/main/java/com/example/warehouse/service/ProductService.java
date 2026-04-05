@@ -46,9 +46,9 @@ public class ProductService {
     private final StockRepository stockRepository;
     private final ProductCache productCache;
 
-    private static final String NOT_FOUND_ID_MSG = "Product not found with id: ";
-    private static final String CATEGORY_NOT_FOUND_MSG = "Category not found with id: ";
-    private static final String SUPPLIER_NOT_FOUND_MSG = "Supplier not found with id: ";
+    private static final String NOT_FOUND_ID_MSG = "Товар не найден с id: ";
+    private static final String CATEGORY_NOT_FOUND_MSG = "Категория не найдена с id: ";
+    private static final String SUPPLIER_NOT_FOUND_MSG = "Поставщик не найден с id: ";
 
     private ProductService self;
 
@@ -78,20 +78,29 @@ public class ProductService {
     }
 
     public List<ProductDto> getAllProducts() {
+        log.debug("Поиск всех товаров");
         return productRepository.findAllWithStocksAndCategory().stream()
                 .map(productMapper::toDto)
                 .toList();
     }
 
     public ProductDto getProductById(Long id) {
+        log.debug("Поиск товара по ID: {}", id);
         Product product = productRepository.findByIdWithDetails(id)
-                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
+                .orElseThrow(() -> {
+                    log.warn("Товар с ID {} не найден", id);
+                    return new ResourceNotFoundException(NOT_FOUND_ID_MSG + id);
+                });
         return productMapper.toDto(product);
     }
 
     public ProductDto getProductWithDetails(Long id) {
+        log.debug("Поиск товара с деталями по ID: {}", id);
         Product product = productRepository.findByIdWithDetails(id)
-                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
+                .orElseThrow(() -> {
+                    log.warn("Товар с ID {} не найден", id);
+                    return new ResourceNotFoundException(NOT_FOUND_ID_MSG + id);
+                });
         return productMapper.toDto(product);
     }
 
@@ -110,7 +119,7 @@ public class ProductService {
         Product savedProduct = productRepository.save(product);
 
         productCache.clearAll();
-        log.info("Cache cleared after creating product with id: {}", savedProduct.getId());
+        log.info("Кэш очищен после создания товара с id: {}", savedProduct.getId());
 
         return productMapper.toDto(savedProduct);
     }
@@ -128,7 +137,7 @@ public class ProductService {
         Product updatedProduct = productRepository.save(product);
 
         productCache.clearAll();
-        log.info("Cache cleared after updating product with id: {}", updatedProduct.getId());
+        log.info("Кэш очищен после обновления товар с id: {}", updatedProduct.getId());
 
         return productMapper.toDto(updatedProduct);
     }
@@ -141,16 +150,18 @@ public class ProductService {
         productRepository.deleteById(id);
 
         productCache.clearAll();
-        log.info("Cache cleared after deleting product with id: {}", id);
+        log.info("Кэш очищен после удаления товаров с id: {}", id);
     }
 
     public List<ProductDto> searchProductsByName(String name) {
+        log.debug("Поиск товаров по названию: {}", name);
         return productRepository.findByNameContainingIgnoreCaseWithDetails(name).stream()
                 .map(productMapper::toDto)
                 .toList();
     }
 
     public List<ProductDto> getProductsByCategory(Long categoryId) {
+        log.debug("Поиск товаров по категории ID: {}", categoryId);
         return productRepository.findByCategoryIdWithDetails(categoryId).stream()
                 .map(productMapper::toDto)
                 .toList();
