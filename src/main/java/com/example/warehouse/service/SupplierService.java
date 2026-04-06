@@ -8,6 +8,7 @@ import com.example.warehouse.repository.SupplierRepository;
 import com.example.warehouse.exception.DemoTransactionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -69,8 +70,22 @@ public class SupplierService {
 
     @Transactional
     public SupplierDto createSupplier(SupplierDto supplierDto) {
+
+        if (supplierDto.getPhone() != null && !supplierDto.getPhone().isEmpty()) {
+            if (supplierRepository.findByPhone(supplierDto.getPhone()).isPresent()) {
+                throw new DataIntegrityViolationException("Телефон '" + supplierDto.getPhone() + "' уже используется другим поставщиком");
+            }
+        }
+
+        if (supplierDto.getEmail() != null && !supplierDto.getEmail().isEmpty()) {
+            if (supplierRepository.findByEmail(supplierDto.getEmail()).isPresent()) {
+                throw new DataIntegrityViolationException("Email '" + supplierDto.getEmail() + "' уже используется другим поставщиком");
+            }
+        }
+
         Supplier supplier = supplierMapper.toEntity(supplierDto);
         Supplier savedSupplier = supplierRepository.save(supplier);
+        log.info("Создан поставщик с ID: {}", savedSupplier.getId());
         return supplierMapper.toDto(savedSupplier);
     }
 

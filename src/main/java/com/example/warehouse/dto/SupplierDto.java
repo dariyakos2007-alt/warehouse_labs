@@ -29,7 +29,7 @@ public class SupplierDto {
     @Schema(description = "Контактное лицо", example = "Иванов Иван")
     private String contactPerson;
 
-    @Pattern(regexp = "^\\+\\d{12}$", message = "Телефон должен быть в формате +XXXXXXXXXXXX (ровно 12 цифр)")
+    @Pattern(regexp = "^\\+375\\d{9}$", message = "Телефон должен быть в формате +375XXXXXXXXX (ровно 12 цифр)")
     @Schema(description = "Телефон", example = "+375447973155")
     private String phone;
 

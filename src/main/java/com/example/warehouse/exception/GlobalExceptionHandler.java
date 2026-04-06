@@ -100,4 +100,27 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(
+            org.springframework.dao.DataIntegrityViolationException ex,
+            WebRequest request) {
+
+        log.error("Data integrity violation: {}", ex.getMessage());
+
+        String message = "Запись с такими данными уже существует или нарушено ограничение уникальности";
+
+        if (ex.getMessage().contains("unique constraint") || ex.getMessage().contains("UNIQUE")) {
+            message = "Запись с таким значением уже существует";
+        }
+
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.CONFLICT.getReasonPhrase(),
+                message,
+                HttpStatus.CONFLICT.value(),
+                LocalDateTime.now(),
+                request.getDescription(false).replace("uri=", "")
+        );
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
 }

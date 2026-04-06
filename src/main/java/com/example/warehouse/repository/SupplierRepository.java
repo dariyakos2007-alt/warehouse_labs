@@ -11,6 +11,12 @@ import java.util.Optional;
 @Repository
 public interface SupplierRepository extends JpaRepository<Supplier, Long> {
 
+    Optional<Supplier> findByPhone(String phone);
+
+    Optional<Supplier> findByEmail(String email);
+
+    Optional<Supplier> findByName(String name);
+
     @Query("SELECT DISTINCT s FROM Supplier s LEFT JOIN FETCH s.products WHERE s.id = :id")
     Optional<Supplier> findByIdWithProducts(Long id);
 

@@ -13,6 +13,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     boolean existsByName(String name);
 
+    Optional<Category> findByName(String name);
+
     @Query("SELECT DISTINCT c FROM Category c LEFT JOIN FETCH c.products WHERE c.name = :name")
     Optional<Category> findByNameWithProducts(@Param("name") String name);
 

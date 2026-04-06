@@ -7,6 +7,7 @@ import com.example.warehouse.model.entity.Category;
 import com.example.warehouse.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -21,7 +22,6 @@ public class CategoryService {
 
     private static final String NOT_FOUND_ID_MSG = "Категория не найдена с ID: ";
     private static final String NOT_FOUND_NAME_MSG = "Категория не найдена с названием: ";
-    private static final String EXISTS_MSG = "Категория с именем ";
 
     public List<CategoryDto> getAllCategories() {
         log.debug("Поиск всех категорий");
@@ -59,10 +59,12 @@ public class CategoryService {
     @Transactional
     public CategoryDto createCategory(CategoryDto categoryDto) {
         if (categoryRepository.existsByName(categoryDto.getName())) {
-            throw new IllegalArgumentException(EXISTS_MSG + categoryDto.getName() + " уже существует.");
+            throw new DataIntegrityViolationException("Категория с именем '" + categoryDto.getName() + "' уже существует");
         }
+
         Category category = categoryMapper.toEntity(categoryDto);
         Category savedCategory = categoryRepository.save(category);
+        log.info("Создана категория с ID: {}", savedCategory.getId());
         return categoryMapper.toDto(savedCategory);
     }
 
