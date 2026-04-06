@@ -71,16 +71,14 @@ public class SupplierService {
     @Transactional
     public SupplierDto createSupplier(SupplierDto supplierDto) {
 
-        if (supplierDto.getPhone() != null && !supplierDto.getPhone().isEmpty()) {
-            if (supplierRepository.findByPhone(supplierDto.getPhone()).isPresent()) {
-                throw new DataIntegrityViolationException("Телефон '" + supplierDto.getPhone() + "' уже используется другим поставщиком");
-            }
+        if (supplierDto.getPhone() != null && !supplierDto.getPhone().isEmpty()
+                && supplierRepository.findByPhone(supplierDto.getPhone()).isPresent()) {
+            throw new DataIntegrityViolationException("Телефон '" + supplierDto.getPhone() + "' уже используется другим поставщиком");
         }
 
-        if (supplierDto.getEmail() != null && !supplierDto.getEmail().isEmpty()) {
-            if (supplierRepository.findByEmail(supplierDto.getEmail()).isPresent()) {
-                throw new DataIntegrityViolationException("Email '" + supplierDto.getEmail() + "' уже используется другим поставщиком");
-            }
+        if (supplierDto.getEmail() != null && !supplierDto.getEmail().isEmpty()
+                && supplierRepository.findByEmail(supplierDto.getEmail()).isPresent()) {
+            throw new DataIntegrityViolationException("Email '" + supplierDto.getEmail() + "' уже используется другим поставщиком");
         }
 
         Supplier supplier = supplierMapper.toEntity(supplierDto);
