@@ -88,19 +88,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
-        log.error("Ресурс не найден: {}", ex.getMessage());
-        ErrorResponse error = new ErrorResponse(
-                HttpStatus.NOT_FOUND.getReasonPhrase(),
-                ex.getMessage(),
-                HttpStatus.NOT_FOUND.value(),
-                LocalDateTime.now(),
-                request.getDescription(false).replace("uri=", "")
-        );
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-    }
-
     @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(
             org.springframework.dao.DataIntegrityViolationException ex,
