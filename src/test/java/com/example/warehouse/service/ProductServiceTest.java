@@ -505,21 +505,19 @@ class ProductServiceTest {
 
     @Test
     void createProductWithStockNoTx_quantityNull_throws() {
+        ProductDto emptyDto = new ProductDto();
         when(productMapper.toEntity(any())).thenReturn(new Product());
         when(productRepository.save(any())).thenReturn(new Product());
         when(warehouseRepository.findById(1L)).thenReturn(Optional.of(new Warehouse()));
-
-        assertThrows(IllegalArgumentException.class,
-                () -> productService.createProductWithStockNoTx(new ProductDto(), 1L, null));
+        assertThrows(IllegalArgumentException.class, () -> productService.createProductWithStockNoTx(emptyDto, 1L, null));
     }
 
     @Test
     void createProductWithStockTx_quantityNull_throws() {
+        ProductDto emptyDto = new ProductDto();
         when(productMapper.toEntity(any())).thenReturn(new Product());
         when(productRepository.save(any())).thenReturn(new Product());
         when(warehouseRepository.findById(1L)).thenReturn(Optional.of(new Warehouse()));
-
-        assertThrows(IllegalArgumentException.class,
-                () -> productService.createProductWithStockTx(new ProductDto(), 1L, null));
+        assertThrows(IllegalArgumentException.class, () -> productService.createProductWithStockTx(emptyDto, 1L, null));
     }
 }
