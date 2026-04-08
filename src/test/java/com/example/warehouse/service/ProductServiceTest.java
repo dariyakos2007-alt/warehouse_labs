@@ -452,8 +452,7 @@ class ProductServiceTest {
         when(supplierRepository.findById(1L)).thenReturn(Optional.of(new Supplier()));
         when(supplierRepository.findById(2L)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> productService.createProduct(input));
+        assertThrows(ResourceNotFoundException.class, () -> productService.createProduct(input));
     }
 
     @Test
