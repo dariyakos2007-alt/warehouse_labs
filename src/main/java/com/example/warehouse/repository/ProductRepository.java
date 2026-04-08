@@ -31,30 +31,26 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "LEFT JOIN FETCH p.category")
     List<Product> findAllWithStocksAndCategory();
 
-    @Query("SELECT p FROM Product p WHERE p.category.name = :categoryName AND p.price <= :maxPrice")
-    List<Product> findByCategoryAndMaxPrice(@Param("categoryName") String categoryName,
-                                            @Param("maxPrice") Double maxPrice);
+    @Query("SELECT DISTINCT p FROM Product p " +
+            "LEFT JOIN FETCH p.category c " +
+            "LEFT JOIN FETCH p.suppliers s " +
+            "LEFT JOIN FETCH p.stocks st " +
+            "WHERE c.name = :categoryName AND p.price <= :maxPrice")
+    Page<Product> findByCategoryAndMaxPriceWithFetch(@Param("categoryName") String categoryName,
+                                                     @Param("maxPrice") Double maxPrice,
+                                                     Pageable pageable);
 
-    @Query("SELECT p FROM Product p WHERE p.category.name = :categoryName AND p.price <= :maxPrice")
-    Page<Product> findByCategoryAndMaxPricePaged(@Param("categoryName") String categoryName,
-                                                 @Param("maxPrice") Double maxPrice,
-                                                 Pageable pageable);
-
-    @Query(value = "SELECT p.* FROM products p " +
+    @Query(value = "SELECT DISTINCT p.* FROM products p " +
             "INNER JOIN categories c ON p.category_id = c.id " +
+            "LEFT JOIN product_supplier ps ON p.id = ps.product_id " +
+            "LEFT JOIN suppliers s ON ps.supplier_id = s.id " +
+            "LEFT JOIN stocks st ON p.id = st.product_id " +
             "WHERE c.name = :categoryName AND p.price <= :maxPrice",
-            nativeQuery = true)
-    List<Product> findByCategoryAndMaxPriceNative(@Param("categoryName") String categoryName,
-                                                  @Param("maxPrice") Double maxPrice);
-
-    @Query(value = "SELECT p.* FROM products p " +
-            "INNER JOIN categories c ON p.category_id = c.id " +
-            "WHERE c.name = :categoryName AND p.price <= :maxPrice",
-            countQuery = "SELECT COUNT(*) FROM products p " +
+            countQuery = "SELECT COUNT(DISTINCT p.id) FROM products p " +
                     "INNER JOIN categories c ON p.category_id = c.id " +
                     "WHERE c.name = :categoryName AND p.price <= :maxPrice",
             nativeQuery = true)
-    Page<Product> findByCategoryAndMaxPriceNativePaged(@Param("categoryName") String categoryName,
-                                                       @Param("maxPrice") Double maxPrice,
-                                                       Pageable pageable);
+    Page<Product> findByCategoryAndMaxPriceNativeWithFetch(@Param("categoryName") String categoryName,
+                                                           @Param("maxPrice") Double maxPrice,
+                                                           Pageable pageable);
 }

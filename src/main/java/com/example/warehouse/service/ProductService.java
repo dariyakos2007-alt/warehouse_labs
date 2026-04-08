@@ -190,38 +190,22 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductDto> getProductsByCategoryAndMaxPrice(String categoryName, Double maxPrice) {
-        List<Product> products = productRepository.findByCategoryAndMaxPrice(categoryName, maxPrice);
-        return products.stream()
-                .map(productMapper::toDto)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public Page<ProductDto> getProductsByCategoryAndMaxPricePaged(
+    public Page<ProductDto> getProductsByCategoryAndMaxPriceWithFetch(
             String categoryName, Double maxPrice, int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
-        Page<Product> productPage = productRepository.findByCategoryAndMaxPricePaged(
+        Page<Product> productPage = productRepository.findByCategoryAndMaxPriceWithFetch(
                 categoryName, maxPrice, pageable);
 
         return productPage.map(productMapper::toDto);
     }
 
     @Transactional(readOnly = true)
-    public List<ProductDto> getProductsByCategoryAndMaxPriceNative(String categoryName, Double maxPrice) {
-        List<Product> products = productRepository.findByCategoryAndMaxPriceNative(categoryName, maxPrice);
-        return products.stream()
-                .map(productMapper::toDto)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public Page<ProductDto> getProductsByCategoryAndMaxPriceNativePaged(
+    public Page<ProductDto> getProductsByCategoryAndMaxPriceNativeWithFetch(
             String categoryName, Double maxPrice, int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
-        Page<Product> productPage = productRepository.findByCategoryAndMaxPriceNativePaged(
+        Page<Product> productPage = productRepository.findByCategoryAndMaxPriceNativeWithFetch(
                 categoryName, maxPrice, pageable);
 
         return productPage.map(productMapper::toDto);
@@ -243,7 +227,7 @@ public class ProductService {
         log.info("Cache MISS for key: category={}, maxPrice={}, page={}, size={}",
                 categoryName, maxPrice, page, size);
 
-        Page<ProductDto> result = self.getProductsByCategoryAndMaxPricePaged(
+        Page<ProductDto> result = self.getProductsByCategoryAndMaxPriceWithFetch(
                 categoryName, maxPrice, page, size);
 
         productCache.put(key, result);
