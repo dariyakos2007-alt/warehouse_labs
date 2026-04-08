@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.util.List;
 
 @Tag(name = "Товары", description = "Методы для работы с товарами")
@@ -139,5 +139,17 @@ public class ProductController {
         Page<ProductDto> products = productService.getProductsByCategoryAndMaxPriceNativeCached(
                 categoryName, maxPrice, page, size);
         return ResponseEntity.ok(products);
+    }
+
+    @PostMapping("/bulk")
+    @ResponseStatus(HttpStatus.CREATED)
+    public List<ProductDto> createProductsBulk(@Valid @RequestBody List<ProductDto> products) {
+        return productService.createProductsBatchWithTx(products);
+    }
+
+    @PostMapping("/bulk-without-tx")
+    @ResponseStatus(HttpStatus.CREATED)
+    public List<ProductDto> createProductsBulkWithoutTransaction(@Valid @RequestBody List<ProductDto> products) {
+        return productService.createProductsBatchWithoutTx(products);
     }
 }

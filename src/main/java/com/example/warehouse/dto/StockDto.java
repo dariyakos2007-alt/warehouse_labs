@@ -23,7 +23,7 @@ public class StockDto {
     private Integer quantity;
 
     @Positive(message = "Максимальное количество должно быть больше 0")
-    @Schema(description = "Максимальное количество (превышение - пересклад)", example = "200")
+    @Schema(description = "Максимальное количество (превышение)", example = "200")
     private Integer maxQuantity;
 
     @Schema(description = "Дата последнего обновления", example = "2026-04-05T15:30:00")

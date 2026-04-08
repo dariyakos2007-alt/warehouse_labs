@@ -84,7 +84,7 @@ public class StockController {
         return ResponseEntity.ok(stockService.getStockByProductAndWarehouse(productId, warehouseId));
     }
 
-    @Operation(summary = "Получить пересклад", description = "Возвращает остатки, где количество превышает максимальное")
+    @Operation(summary = "Получить ресклад", description = "Возвращает остатки, где количество превышает максимальное")
     @GetMapping("/over-stock")
     public ResponseEntity<List<StockDto>> getOverStock() {
         return ResponseEntity.ok(stockService.getOverStock());
