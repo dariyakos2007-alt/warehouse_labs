@@ -157,7 +157,6 @@ class CategoryServiceTest {
     void updateCategory_whenNotExists_shouldThrow() {
         Long id = 1L;
         when(categoryRepository.findById(id)).thenReturn(Optional.empty());
-
         assertThrows(ResourceNotFoundException.class, () -> categoryService.updateCategory(id, new CategoryDto()));
     }
 
