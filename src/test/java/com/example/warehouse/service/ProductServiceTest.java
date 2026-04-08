@@ -240,7 +240,6 @@ class ProductServiceTest {
     void getProductsByCategoryAndMaxPriceCached_cacheHit() {
         String category = "Electronics";
         Double maxPrice = 1000.0;
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
         ProductSearchKey key = new ProductSearchKey(category, maxPrice, 0, 10, "name");
         Page<ProductDto> cachedPage = new PageImpl<>(List.of(productDto));
         when(productCache.get(key)).thenReturn(cachedPage);
@@ -255,7 +254,6 @@ class ProductServiceTest {
     void getProductsByCategoryAndMaxPriceCached_cacheMiss() {
         String category = "Electronics";
         Double maxPrice = 1000.0;
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
         ProductSearchKey key = new ProductSearchKey(category, maxPrice, 0, 10, "name");
         when(productCache.get(key)).thenReturn(null);
         Page<Product> productPage = new PageImpl<>(List.of(product));
@@ -287,7 +285,6 @@ class ProductServiceTest {
     void getProductsByCategoryAndMaxPriceNativeCached_cacheMiss_nonEmpty() {
         String category = "Electronics";
         Double maxPrice = 1000.0;
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
         ProductSearchKey key = new ProductSearchKey(category, maxPrice, 0, 10, "name");
         when(productCache.get(key)).thenReturn(null);
         Page<Long> idsPage = new PageImpl<>(List.of(1L));
