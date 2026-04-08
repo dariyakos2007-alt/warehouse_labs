@@ -449,12 +449,11 @@ class ProductServiceTest {
 
         Product entity = new Product();
         when(productMapper.toEntity(input)).thenReturn(entity);
-
         when(supplierRepository.findById(1L)).thenReturn(Optional.of(new Supplier()));
-
         when(supplierRepository.findById(2L)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> productService.createProduct(input));
+        assertThrows(ResourceNotFoundException.class,
+                () -> productService.createProduct(input));
     }
 
     @Test
@@ -489,7 +488,9 @@ class ProductServiceTest {
 
         Product entity = new Product();
         Supplier supplier1 = new Supplier();
+        supplier1.setId(1L);
         Supplier supplier2 = new Supplier();
+        supplier2.setId(2L);
 
         when(productMapper.toEntity(input)).thenReturn(entity);
         when(supplierRepository.findById(1L)).thenReturn(Optional.of(supplier1));
@@ -500,8 +501,10 @@ class ProductServiceTest {
 
         productService.createProduct(input);
 
-        assertFalse(entity.getSuppliers().isEmpty());
+        assertNotNull(entity.getSuppliers());
         assertEquals(2, entity.getSuppliers().size());
+        assertTrue(entity.getSuppliers().contains(supplier1));
+        assertTrue(entity.getSuppliers().contains(supplier2));
     }
 
     @Test
