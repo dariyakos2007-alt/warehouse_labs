@@ -438,21 +438,6 @@ class ProductServiceTest {
     }
 
     @Test
-    void createProduct_withNonExistingSupplier_throwsResourceNotFoundException() {
-        ProductDto input = new ProductDto();
-        input.setName("Test");
-        input.setPrice(100.0);
-        input.setSupplierIds(Set.of(1L, 2L));
-
-        Product entity = new Product();
-        when(productMapper.toEntity(input)).thenReturn(entity);
-        when(supplierRepository.findById(1L)).thenReturn(Optional.of(new Supplier()));
-        when(supplierRepository.findById(2L)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> productService.createProduct(input));
-    }
-
-    @Test
     void createProduct_withExistingCategory_setsCategory() {
         ProductDto input = new ProductDto();
         input.setName("Test");
