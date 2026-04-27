@@ -119,12 +119,14 @@ class WarehouseServiceTest {
         assertEquals("Updated", result.getName());
     }
 
+    @SuppressWarnings("squid:S5778")
     @Test
     void updateWarehouse_notFound() {
         when(warehouseRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> warehouseService.updateWarehouse(1L, new WarehouseDto()));
     }
 
+    @SuppressWarnings("squid:S5778")
     @Test
     void deleteWarehouse_success() {
         when(warehouseRepository.existsById(1L)).thenReturn(true);

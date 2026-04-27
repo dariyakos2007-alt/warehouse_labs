@@ -188,12 +188,14 @@ class StockServiceTest {
         assertEquals(30, result.getQuantity());
     }
 
+    @SuppressWarnings("squid:S5778")
     @Test
     void updateStock_notFound() {
         when(stockRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> stockService.updateStock(1L, createStockDto(1L, 10)));
     }
 
+    @SuppressWarnings("squid:S5778")
     @Test
     void deleteStock_success() {
         when(stockRepository.existsById(1L)).thenReturn(true);

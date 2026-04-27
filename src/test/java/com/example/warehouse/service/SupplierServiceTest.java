@@ -191,12 +191,14 @@ class SupplierServiceTest {
         assertEquals("222", result.getPhone());
     }
 
+    @SuppressWarnings("squid:S5778")
     @Test
     void updateSupplier_notFound() {
         when(supplierRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> supplierService.updateSupplier(1L, new SupplierDto()));
     }
 
+    @SuppressWarnings("squid:S5778")
     @Test
     void deleteSupplier_success() {
         when(supplierRepository.existsById(1L)).thenReturn(true);

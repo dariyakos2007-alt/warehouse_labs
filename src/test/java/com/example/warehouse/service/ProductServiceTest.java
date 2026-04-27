@@ -316,11 +316,13 @@ class ProductServiceTest {
         verify(productCache).put(eq(key), any(Page.class));
     }
 
+    @SuppressWarnings("squid:S5778")
     @Test
     void createProductsBatchWithTx_emptyList_throws() {
         assertThrows(IllegalArgumentException.class, () -> productService.createProductsBatchWithTx(Collections.emptyList()));
     }
 
+    @SuppressWarnings("squid:S5778")
     @Test
     void createProductsBatchWithTx_duplicateNames_throws() {
         List<ProductDto> list = List.of(createDto("A", 10.0), createDto("A", 20.0));

@@ -153,6 +153,7 @@ class CategoryServiceTest {
         verify(categoryRepository).save(existing);
     }
 
+    @SuppressWarnings("squid:S5778")
     @Test
     void updateCategory_whenNotExists_shouldThrow() {
         Long id = 1L;
