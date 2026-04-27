@@ -353,11 +353,13 @@ class ProductServiceTest {
         assertEquals(2, result.size());
     }
 
+    @SuppressWarnings("squid:S5778")
     @Test
     void createProductsBatchWithoutTx_emptyList_throws() {
         assertThrows(IllegalArgumentException.class, () -> productService.createProductsBatchWithoutTx(Collections.emptyList()));
     }
 
+    @SuppressWarnings("squid:S5778")
     @Test
     void createProductsBatchWithoutTx_duplicateInLoop_throws() {
         ProductDto dto1 = createDto("Dup", 10.0);
