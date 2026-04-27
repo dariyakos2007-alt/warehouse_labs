@@ -318,15 +318,13 @@ class ProductServiceTest {
 
     @Test
     void createProductsBatchWithTx_emptyList_throws() {
-        assertThrows(IllegalArgumentException.class, () ->
-                productService.createProductsBatchWithTx(Collections.emptyList()));
+        assertThrows(IllegalArgumentException.class, () -> productService.createProductsBatchWithTx(Collections.emptyList()));
     }
 
     @Test
     void createProductsBatchWithTx_duplicateNames_throws() {
         List<ProductDto> list = List.of(createDto("A", 10.0), createDto("A", 20.0));
-        assertThrows(IllegalArgumentException.class, () ->
-                productService.createProductsBatchWithTx(list));
+        assertThrows(IllegalArgumentException.class, () -> productService.createProductsBatchWithTx(list));
     }
 
     @Test
