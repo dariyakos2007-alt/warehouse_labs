@@ -24,6 +24,7 @@ public class AsyncProductService {
 
     private final Map<Long, String> taskStatus = new ConcurrentHashMap<>();
     private final AtomicLong taskIdGenerator = new AtomicLong(1);
+    private static final String STATUS_FAILED = "FAILED";
 
     public Long startAsyncTask(List<ProductDto> productDtos) {
         Long taskId = taskIdGenerator.getAndIncrement();
@@ -34,7 +35,7 @@ public class AsyncProductService {
         CompletableFuture.runAsync(() -> processTask(taskId, productDtos))
                 .exceptionally(ex -> {
                     log.error("Ошибка при выполнении задачи {}: {}", taskId, ex.getMessage());
-                    taskStatus.put(taskId, "FAILED");
+                    taskStatus.put(taskId, STATUS_FAILED);
                     return null;
                 });
 
@@ -53,10 +54,10 @@ public class AsyncProductService {
             log.info("Задача {} завершена успешно", taskId);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            taskStatus.put(taskId, "FAILED");
+            taskStatus.put(taskId, STATUS_FAILED);
             log.error("Задача {} прервана", taskId, e);
         } catch (Exception e) {
-            taskStatus.put(taskId, "FAILED");
+            taskStatus.put(taskId, STATUS_FAILED);
             log.error("Ошибка при выполнении задачи {}: {}", taskId, e.getMessage());
         }
     }
