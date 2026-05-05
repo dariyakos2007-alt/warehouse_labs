@@ -92,10 +92,10 @@ public class ProductController {
         }
     }
 
-   @GetMapping("/by-category-fetch")
+    @GetMapping("/by-category-fetch")
     public ResponseEntity<Page<ProductDto>> getProductsByCategoryAndPriceWithFetch(
-            @RequestParam String categoryName,
-            @RequestParam Double maxPrice,
+            @RequestParam(required = false) String categoryName,
+            @RequestParam(required = false) Double maxPrice,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
@@ -106,8 +106,8 @@ public class ProductController {
 
     @GetMapping("/by-category-native-fetch")
     public ResponseEntity<Page<ProductDto>> getProductsByCategoryAndPriceNativeWithFetch(
-            @RequestParam String categoryName,
-            @RequestParam Double maxPrice,
+            @RequestParam(required = false) String categoryName,
+            @RequestParam(required = false) Double maxPrice,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
@@ -118,8 +118,8 @@ public class ProductController {
 
     @GetMapping("/by-category-cached")
     public ResponseEntity<Page<ProductDto>> getProductsByCategoryAndPriceCached(
-            @RequestParam String categoryName,
-            @RequestParam Double maxPrice,
+            @RequestParam(required = false) String categoryName,
+            @RequestParam(required = false) Double maxPrice,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 

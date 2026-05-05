@@ -62,7 +62,7 @@ public class ProductService {
     }
 
     private void setSuppliersIfPresent(Product product, Set<Long> supplierIds) {
-        if (supplierIds != null && !supplierIds.isEmpty()) {
+        if (supplierIds != null) {
             Set<Supplier> suppliers = new HashSet<>();
             for (Long supplierId : supplierIds) {
                 Supplier supplier = supplierRepository.findById(supplierId)
