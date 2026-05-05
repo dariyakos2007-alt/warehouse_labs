@@ -8,6 +8,7 @@ import com.example.warehouse.repository.SupplierRepository;
 import com.example.warehouse.exception.DemoTransactionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -20,29 +21,38 @@ public class SupplierService {
     private final SupplierRepository supplierRepository;
     private final SupplierMapper supplierMapper;
 
-    private static final String NOT_FOUND_ID_MSG = "Supplier not found with id: ";
+    private static final String NOT_FOUND_ID_MSG = "Поставщик не найден с id: ";
 
     public List<SupplierDto> getAllSuppliers() {
-        return supplierRepository.findAll().stream()
+        log.debug("Поиск всех поставщиков");
+        return supplierRepository.findAllWithProducts().stream()
                 .map(supplierMapper::toDto)
                 .toList();
     }
 
     public SupplierDto getSupplierById(Long id) {
-        Supplier supplier = supplierRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
+        log.debug("Поиск поставщика по ID: {}", id);
+        Supplier supplier = supplierRepository.findByIdWithProducts(id)
+                .orElseThrow(() -> {
+                    log.warn("Поставщик с ID {} не найден", id);
+                    return new ResourceNotFoundException(NOT_FOUND_ID_MSG + id);
+                });
         return supplierMapper.toDto(supplier);
     }
 
     public SupplierDto getSupplierByName(String name) {
-        Supplier supplier = supplierRepository.findByName(name)
-                .orElseThrow(() -> new ResourceNotFoundException("Supplier not found with name: " + name));
+        log.debug("Поиск поставщика по названию: {}", name);
+        Supplier supplier = supplierRepository.findByNameWithProducts(name)
+                .orElseThrow(() -> {
+                    log.warn("Поставщик с названием {} не найден", name);
+                    return new ResourceNotFoundException("Поставщик не найден с именем: " + name);
+                });
         return supplierMapper.toDto(supplier);
     }
 
     public SupplierDto getSupplierByEmail(String email) {
-        Supplier supplier = supplierRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Supplier not found with email: " + email));
+        Supplier supplier = supplierRepository.findByEmailWithProducts(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Поставщик не найден с email: " + email));
         return supplierMapper.toDto(supplier);
     }
 
@@ -53,15 +63,27 @@ public class SupplierService {
     }
 
     public List<SupplierDto> searchSuppliersByName(String name) {
-        return supplierRepository.findByNameContainingIgnoreCase(name).stream()
+        return supplierRepository.findByNameContainingIgnoreCaseWithProducts(name).stream()
                 .map(supplierMapper::toDto)
                 .toList();
     }
 
     @Transactional
     public SupplierDto createSupplier(SupplierDto supplierDto) {
+
+        if (supplierDto.getPhone() != null && !supplierDto.getPhone().isEmpty()
+                && supplierRepository.findByPhone(supplierDto.getPhone()).isPresent()) {
+            throw new DataIntegrityViolationException("Телефон '" + supplierDto.getPhone() + "' уже используется другим поставщиком");
+        }
+
+        if (supplierDto.getEmail() != null && !supplierDto.getEmail().isEmpty()
+                && supplierRepository.findByEmail(supplierDto.getEmail()).isPresent()) {
+            throw new DataIntegrityViolationException("Email '" + supplierDto.getEmail() + "' уже используется другим поставщиком");
+        }
+
         Supplier supplier = supplierMapper.toEntity(supplierDto);
         Supplier savedSupplier = supplierRepository.save(supplier);
+        log.info("Создан поставщик с ID: {}", savedSupplier.getId());
         return supplierMapper.toDto(savedSupplier);
     }
 

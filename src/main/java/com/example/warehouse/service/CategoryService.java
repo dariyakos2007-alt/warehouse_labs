@@ -7,6 +7,7 @@ import com.example.warehouse.model.entity.Category;
 import com.example.warehouse.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -19,30 +20,38 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
 
-    private static final String NOT_FOUND_ID_MSG = "Category not found with id: ";
-    private static final String NOT_FOUND_NAME_MSG = "Category not found with name: ";
-    private static final String EXISTS_MSG = "Category with name ";
+    private static final String NOT_FOUND_ID_MSG = "Категория не найдена с ID: ";
+    private static final String NOT_FOUND_NAME_MSG = "Категория не найдена с названием: ";
 
     public List<CategoryDto> getAllCategories() {
-        return categoryRepository.findAll().stream()
+        log.debug("Поиск всех категорий");
+        return categoryRepository.findAllWithProducts().stream()
                 .map(categoryMapper::toDto)
                 .toList();
     }
 
     public CategoryDto getCategoryById(Long id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
+        log.debug("Поиск категории по ID: {}", id);
+        Category category = categoryRepository.findByIdWithProducts(id)
+                .orElseThrow(() -> {
+                    log.warn("Категория с ID {} не найдена", id);
+                    return new ResourceNotFoundException(NOT_FOUND_ID_MSG + id);
+                });
         return categoryMapper.toDto(category);
     }
 
     public CategoryDto getCategoryByName(String name) {
-        Category category = categoryRepository.findByName(name)
-                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_NAME_MSG + name));
+        log.debug("Поиск категории по названию: {}", name);
+        Category category = categoryRepository.findByNameWithProducts(name)
+                .orElseThrow(() -> {
+                    log.warn("Категория с названием {} не найдена", name);
+                    return new ResourceNotFoundException(NOT_FOUND_NAME_MSG + name);
+                });
         return categoryMapper.toDto(category);
     }
 
     public List<CategoryDto> searchCategoriesByName(String name) {
-        return categoryRepository.findByNameContainingIgnoreCase(name).stream()
+        return categoryRepository.findByNameContainingIgnoreCaseWithProducts(name).stream()
                 .map(categoryMapper::toDto)
                 .toList();
     }
@@ -50,10 +59,12 @@ public class CategoryService {
     @Transactional
     public CategoryDto createCategory(CategoryDto categoryDto) {
         if (categoryRepository.existsByName(categoryDto.getName())) {
-            throw new IllegalArgumentException(EXISTS_MSG + categoryDto.getName() + " already exists");
+            throw new DataIntegrityViolationException("Категория с именем '" + categoryDto.getName() + "' уже существует");
         }
+
         Category category = categoryMapper.toEntity(categoryDto);
         Category savedCategory = categoryRepository.save(category);
+        log.info("Создана категория с ID: {}", savedCategory.getId());
         return categoryMapper.toDto(savedCategory);
     }
 

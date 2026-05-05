@@ -26,19 +26,24 @@ public class StockService {
     private final StockMapper stockMapper;
 
 
-    private static final String NOT_FOUND_ID_MSG = "Stock not found with id: ";
-    private static final String PRODUCT_NOT_FOUND_MSG = "Product not found with id: ";
-    private static final String WAREHOUSE_NOT_FOUND_MSG = "Warehouse not found with id: ";
+    private static final String NOT_FOUND_ID_MSG = "Остаток не найден с id: ";
+    private static final String PRODUCT_NOT_FOUND_MSG = "Товар не найден с id: ";
+    private static final String WAREHOUSE_NOT_FOUND_MSG = "Склад не найден с id: ";
 
     public List<StockDto> getAllStocks() {
-        return stockRepository.findAll().stream()
+        log.debug("Поиск всех остатков");
+        return stockRepository.findAllWithDetails().stream()
                 .map(stockMapper::toDto)
                 .toList();
     }
 
     public StockDto getStockById(Long id) {
-        Stock stock = stockRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
+        log.debug("Поиск остатка по ID: {}", id);
+        Stock stock = stockRepository.findByIdWithDetails(id)
+                .orElseThrow(() ->  {
+                    log.warn("Остаток с ID {} не найден", id);
+                    return new ResourceNotFoundException(NOT_FOUND_ID_MSG + id);
+                });
         return stockMapper.toDto(stock);
     }
 
@@ -55,26 +60,28 @@ public class StockService {
     }
 
     public List<StockDto> getStocksByProduct(Long productId) {
-        return stockRepository.findByProductId(productId).stream()
+        log.debug("Поиск остатков по товару ID: {}", productId);
+        return stockRepository.findByProductIdWithDetails(productId).stream()
                 .map(stockMapper::toDto)
                 .toList();
     }
 
     public List<StockDto> getStocksByWarehouse(Long warehouseId) {
-        return stockRepository.findByWarehouseId(warehouseId).stream()
+        log.debug("Поиск остатков по складу ID: {}", warehouseId);
+        return stockRepository.findByWarehouseIdWithDetails(warehouseId).stream()
                 .map(stockMapper::toDto)
                 .toList();
     }
 
     public StockDto getStockByProductAndWarehouse(Long productId, Long warehouseId) {
-        Stock stock = stockRepository.findByProductIdAndWarehouseId(productId, warehouseId)
+        Stock stock = stockRepository.findByProductIdAndWarehouseIdWithDetails(productId, warehouseId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Stock not found for product " + productId + " and warehouse " + warehouseId));
+                        "Остаток не найден для товара " + productId + " и склада " + warehouseId));
         return stockMapper.toDto(stock);
     }
 
     public List<StockDto> getOverStock() {
-        return stockRepository.findOverStock().stream()
+        return stockRepository.findOverStockWithDetails().stream()
                 .map(stockMapper::toDto)
                 .toList();
     }
@@ -140,7 +147,7 @@ public class StockService {
     @Transactional
     public void transferStock(Long productId, Long fromWarehouseId, Long toWarehouseId, int amount) {
         Stock fromStock = stockRepository.findByProductIdAndWarehouseId(productId, fromWarehouseId)
-                .orElseThrow(() -> new ResourceNotFoundException("Stock not found in source warehouse"));
+                .orElseThrow(() -> new ResourceNotFoundException("Остаток не найден в основном складе"));
 
         Stock toStock = stockRepository.findByProductIdAndWarehouseId(productId, toWarehouseId)
                 .orElseGet(() -> {
@@ -159,7 +166,7 @@ public class StockService {
     }
 
     public List<StockDto> getAllStocksWithProblem() {
-        return stockRepository.findAll().stream()
+        return stockRepository.findAllWithDetails().stream()
                 .map(stockMapper::toDto)
                 .toList();
     }

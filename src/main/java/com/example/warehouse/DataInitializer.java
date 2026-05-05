@@ -34,11 +34,8 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
 
         if (categoryRepository.count() > 0) {
-            log.info("Данные уже есть в базе, инициализация пропущена");
             return;
         }
-
-        log.info("Инициализация тестовых данных...");
 
         Category tools = categoryRepository.save(
                 Category.builder().name("Инструменты").description("Ручные и электроинструменты").build()
@@ -155,11 +152,5 @@ public class DataInitializer implements CommandLineRunner {
         );
         stockRepository.saveAll(stocks);
 
-        log.info("Тестовые данные успешно загружены!");
-        log.info(" Категорий: {}", categoryRepository.count());
-        log.info(" Товаров: {}", productRepository.count());
-        log.info(" Поставщиков: {}", supplierRepository.count());
-        log.info(" Складов: {}", warehouseRepository.count());
-        log.info(" Остатков: {}", stockRepository.count());
     }
 }

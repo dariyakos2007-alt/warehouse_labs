@@ -19,23 +19,32 @@ public class WarehouseService {
     private final WarehouseRepository warehouseRepository;
     private final WarehouseMapper warehouseMapper;
 
-    private static final String NOT_FOUND_ID_MSG = "Warehouse not found with id: ";
+    private static final String NOT_FOUND_ID_MSG = "Склад не найден с id: ";
 
     public List<WarehouseDto> getAllWarehouses() {
-        return warehouseRepository.findAll().stream()
+        log.debug("Поиск всех складов");
+        return warehouseRepository.findAllWithStocks().stream()
                 .map(warehouseMapper::toDto)
                 .toList();
     }
 
     public WarehouseDto getWarehouseById(Long id) {
-        Warehouse warehouse = warehouseRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ID_MSG + id));
+        log.debug("Поиск склада по ID: {}", id);
+        Warehouse warehouse = warehouseRepository.findByIdWithStocks(id)
+                .orElseThrow(() -> {
+                    log.warn("Склад с ID {} не найден", id);
+                    return new ResourceNotFoundException(NOT_FOUND_ID_MSG + id);
+                });
         return warehouseMapper.toDto(warehouse);
     }
 
     public WarehouseDto getWarehouseByName(String name) {
-        Warehouse warehouse = warehouseRepository.findByName(name)
-                .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found with name: " + name));
+        log.debug("Поиск склада по названию: {}", name);
+        Warehouse warehouse = warehouseRepository.findByNameWithStocks(name)
+                .orElseThrow(() -> {
+                    log.warn("Склад с названием {} не найден", name);
+                    return new ResourceNotFoundException("Склад не найден с именем: " + name);
+                });
         return warehouseMapper.toDto(warehouse);
     }
 

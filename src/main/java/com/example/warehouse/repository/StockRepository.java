@@ -13,13 +13,6 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 
     Optional<Stock> findByProductIdAndWarehouseId(Long productId, Long warehouseId);
 
-    List<Stock> findByProductId(Long productId);
-
-    List<Stock> findByWarehouseId(Long warehouseId);
-
-    @Query("SELECT s FROM Stock s WHERE s.maxQuantity IS NOT NULL AND s.quantity > s.maxQuantity")
-    List<Stock> findOverStock();
-
     @Query("SELECT s FROM Stock s JOIN FETCH s.product JOIN FETCH s.warehouse WHERE s.id = :id")
     Optional<Stock> findByIdWithDetails(@Param("id") Long id);
 
@@ -30,4 +23,21 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
             "LEFT JOIN FETCH s.warehouse " +
             "LEFT JOIN FETCH s.product")
     List<Stock> findAllWithWarehouseAndProduct();
+
+    @Query("SELECT s FROM Stock s JOIN FETCH s.product JOIN FETCH s.warehouse " +
+            "WHERE s.product.id = :productId")
+    List<Stock> findByProductIdWithDetails(@Param("productId") Long productId);
+
+    @Query("SELECT s FROM Stock s JOIN FETCH s.product JOIN FETCH s.warehouse " +
+            "WHERE s.warehouse.id = :warehouseId")
+    List<Stock> findByWarehouseIdWithDetails(@Param("warehouseId") Long warehouseId);
+
+    @Query("SELECT s FROM Stock s JOIN FETCH s.product JOIN FETCH s.warehouse " +
+            "WHERE s.product.id = :productId AND s.warehouse.id = :warehouseId")
+    Optional<Stock> findByProductIdAndWarehouseIdWithDetails(@Param("productId") Long productId,
+                                                             @Param("warehouseId") Long warehouseId);
+
+    @Query("SELECT s FROM Stock s JOIN FETCH s.product JOIN FETCH s.warehouse " +
+            "WHERE s.maxQuantity IS NOT NULL AND s.quantity > s.maxQuantity")
+    List<Stock> findOverStockWithDetails();
 }
