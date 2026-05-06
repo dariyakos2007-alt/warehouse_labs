@@ -1,23 +1,24 @@
-FROM eclipse-temurin:17-jdk-jammy AS build
-WORKDIR /app
-
-RUN apt-get update && apt-get install -y maven
+FROM maven:3.9.9-eclipse-temurin-17-alpine AS build
+WORKDIR /workspace
 
 COPY pom.xml .
-RUN mvn dependency:go-offline -B
+RUN mvn -B -ntp dependency:go-offline
 
 COPY src ./src
-RUN mvn clean package -Dmaven.test.skip=true
+RUN mvn -B -ntp package -DskipTests
 
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN addgroup -S app && adduser -S app -G app && mkdir -p /app/logs
 
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build --chown=app:app /workspace/target/*.jar /app/app.jar
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
+USER app
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
+  CMD wget -q -O /dev/null http://127.0.0.1:8080/actuator/health || exit 1
+
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

@@ -35,3 +35,6 @@ frontend/dist/
 frontend/*.log
 frontend/.env
 
+logs/
+build.log
+

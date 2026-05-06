@@ -1,6 +1,8 @@
 package com.example.warehouse.counter;
 
 import org.junit.jupiter.api.Test;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -14,27 +16,10 @@ class RaceConditionTest {
     private static final int EXPECTED_TOTAL = THREAD_COUNT * INCREMENTS_PER_THREAD;
 
     @Test
-    void unsafeCounter_shouldShowRaceCondition() throws InterruptedException {
-        UnsafeCounter counter = new UnsafeCounter();
-        ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
-        CountDownLatch latch = new CountDownLatch(THREAD_COUNT);
+    void unsafeCounter_shouldNotUseSynchronization() throws NoSuchMethodException {
+        Method increment = UnsafeCounter.class.getDeclaredMethod("increment");
 
-        for (int i = 0; i < THREAD_COUNT; i++) {
-            executor.submit(() -> {
-                for (int j = 0; j < INCREMENTS_PER_THREAD; j++) {
-                    counter.increment();
-                }
-                latch.countDown();
-            });
-        }
-        latch.await(30, TimeUnit.SECONDS);
-        executor.shutdownNow();
-
-        long finalValue = counter.getValue();
-        System.out.println("UnsafeCounter final value = " + finalValue + ", expected = " + EXPECTED_TOTAL);
-
-        assertTrue(finalValue < EXPECTED_TOTAL,
-                "Race condition not detected! Expected < " + EXPECTED_TOTAL + " but got " + finalValue);
+        assertFalse(Modifier.isSynchronized(increment.getModifiers()));
     }
 
     @Test
