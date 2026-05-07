@@ -2,13 +2,9 @@ name: CI/CD
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [main, master]
   pull_request:
-    branches:
-      - main
-      - master
+    branches: [main, master]
   workflow_dispatch:
 
 env:
@@ -19,20 +15,26 @@ jobs:
   backend:
     name: Backend build and tests
     runs-on: ubuntu-latest
+    env:
+      TEST_DB_NAME: warehouse_test
+      TEST_DB_USER: ${{ secrets.TEST_DB_USER }}
+      TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+
     services:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: warehouse_test
-          POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+          POSTGRES_DB: ${{ env.TEST_DB_NAME }}
+          POSTGRES_USER: ${{ env.TEST_DB_USER }}
+          POSTGRES_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U ${{ secrets.TEST_DB_USER }} -d warehouse_test"
+          --health-cmd "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -50,12 +52,12 @@ jobs:
       - name: Run backend tests
         run: ./mvnw -B test
         env:
-          DB_NAME: warehouse_test
-          DB_USER: ${{ secrets.TEST_DB_USER }}
-          DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/warehouse_test
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.TEST_DB_USER }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+          DB_NAME: ${{ env.TEST_DB_NAME }}
+          DB_USER: ${{ env.TEST_DB_USER }}
+          DB_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ env.TEST_DB_NAME }}
+          SPRING_DATASOURCE_USERNAME: ${{ env.TEST_DB_USER }}
+          SPRING_DATASOURCE_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
 
   frontend:
     name: Frontend build and lint
@@ -113,9 +115,6 @@ jobs:
     environment: production
     outputs:
       hooks_configured: ${{ steps.deploy-config.outputs.hooks_configured }}
-    env:
-      RENDER_BACKEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK_URL }}
-      RENDER_FRONTEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}
     steps:
       - name: Check deploy hook configuration
         id: deploy-config
@@ -125,17 +124,24 @@ jobs:
           else
             echo "hooks_configured=false" >> "$GITHUB_OUTPUT"
           fi
+        env:
+          RENDER_BACKEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK_URL }}
+          RENDER_FRONTEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}
 
       - name: Deploy backend
         if: env.RENDER_BACKEND_DEPLOY_HOOK_URL != ''
         run: curl -fsS -X POST "$RENDER_BACKEND_DEPLOY_HOOK_URL"
+        env:
+          RENDER_BACKEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK_URL }}
 
       - name: Deploy frontend
         if: env.RENDER_FRONTEND_DEPLOY_HOOK_URL != ''
         run: curl -fsS -X POST "$RENDER_FRONTEND_DEPLOY_HOOK_URL"
+        env:
+          RENDER_FRONTEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}
 
       - name: Print deploy hook hint
-        if: env.RENDER_BACKEND_DEPLOY_HOOK_URL == '' || env.RENDER_FRONTEND_DEPLOY_HOOK_URL == ''
+        if: failure()
         run: |
           echo "Add RENDER_BACKEND_DEPLOY_HOOK_URL and RENDER_FRONTEND_DEPLOY_HOOK_URL repository secrets to enable Render deploys."
 
@@ -144,9 +150,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy
     if: github.event_name != 'pull_request' && needs.deploy.outputs.hooks_configured == 'true'
-    env:
-      RENDER_BACKEND_HEALTH_URL: ${{ secrets.RENDER_BACKEND_HEALTH_URL }}
-      RENDER_FRONTEND_HEALTH_URL: ${{ secrets.RENDER_FRONTEND_HEALTH_URL }}
     steps:
       - name: Wait for deployment startup
         run: sleep 60
@@ -155,8 +158,12 @@ jobs:
         run: |
           BACKEND_URL="${RENDER_BACKEND_HEALTH_URL:-https://warehouse-lab2-backend.onrender.com/actuator/health}"
           curl -fsS --retry 30 --retry-delay 10 --retry-all-errors --max-time 10 "$BACKEND_URL"
+        env:
+          RENDER_BACKEND_HEALTH_URL: ${{ secrets.RENDER_BACKEND_HEALTH_URL }}
 
       - name: Check frontend
         run: |
           FRONTEND_URL="${RENDER_FRONTEND_HEALTH_URL:-https://warehouse-lab2-frontend.onrender.com/}"
           curl -fsS --retry 30 --retry-delay 10 --retry-all-errors --max-time 10 "$FRONTEND_URL"
+        env:
+          RENDER_FRONTEND_HEALTH_URL: ${{ secrets.RENDER_FRONTEND_HEALTH_URL }}
