@@ -24,12 +24,12 @@ jobs:
         image: postgres:16-alpine
         env:
           POSTGRES_DB: warehouse_test
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U postgres -d warehouse_test"
+          --health-cmd "pg_isready -U ${{ secrets.TEST_DB_USER }} -d warehouse_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -51,11 +51,11 @@ jobs:
         run: ./mvnw -B test
         env:
           DB_NAME: warehouse_test
-          DB_USER: postgres
-          DB_PASSWORD: postgres
+          DB_USER: ${{ secrets.TEST_DB_USER }}
+          DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/warehouse_test
-          SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: postgres
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.TEST_DB_USER }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
 
   frontend:
     name: Frontend build and lint
